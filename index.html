@@ -412,54 +412,64 @@
             document.getElementById('detail-price-fake').innerText = 'Rp ' + item.price_fake.toLocaleString('id-ID');
             document.getElementById('detail-desc').innerText = item.description;
 
-            // Preview Buttons logic
+            // --- 1. SET BUTTONS PREVIEW (SMART LAYOUT) ---
             const previewContainer = document.getElementById('detail-preview-buttons');
             previewContainer.innerHTML = '';
             
+            // Title
             const titleLabel = document.createElement('h3');
             titleLabel.className = "text-xs font-bold text-wa-gray uppercase tracking-wider mb-2 col-span-full";
             titleLabel.innerHTML = "Lihat <span class='text-wa-teal'>Live Pre</span>view";
             previewContainer.appendChild(titleLabel);
 
+            // Container Wrapper
             const buttonsWrapper = document.createElement('div');
             buttonsWrapper.className = "flex flex-col gap-2";
             previewContainer.appendChild(buttonsWrapper);
             
             const baseUrl = item.link.replace(/\/$/, ""); 
-            const variants = item.variants || [];
-            
-            const hasFoto = variants.includes('foto');
-            const hasAnimasi = variants.includes('animasi');
-            const hasNoFoto = variants.includes('no-foto');
+            const sortOrder = ['foto', 'animasi', 'no-foto'];
+            const sortedVariants = (item.variants || []).sort((a,b) => sortOrder.indexOf(a) - sortOrder.indexOf(b));
 
-            // Default case (No variants)
-            if (variants.length === 0) {
+            // LOGIC:
+            // 0 Varian -> Default Primary
+            // 1 Varian -> Primary (Apapun jenisnya)
+            // 2 Varian -> Grid 2 Kolom (Boxy)
+            // 3 Varian -> 1 Primary (Atas) + 2 Grid Boxy (Bawah)
+
+            if (sortedVariants.length === 0) {
                 createPreviewButton(buttonsWrapper, item.link, "Preview Undangan", "default", true);
+            } else if (sortedVariants.length === 1) {
+                // 1 VARIANT -> ALWAYS PRIMARY
+                const variant = sortedVariants[0];
+                const d = getVariantDetails(variant, item, sortedVariants);
+                createPreviewButton(buttonsWrapper, d.url, "Preview " + d.label, d.icon, true);
+            } else if (sortedVariants.length === 2) {
+                // 2 VARIANTS -> GRID 2 COL (BOXY)
+                const grid = document.createElement('div');
+                grid.className = "grid grid-cols-2 gap-2";
+                buttonsWrapper.appendChild(grid);
+                
+                sortedVariants.forEach(v => {
+                    const d = getVariantDetails(v, item, sortedVariants);
+                    createPreviewButton(grid, d.url, d.label, d.icon, false);
+                });
             } else {
-                // Row 1: Foto (Primary)
-                if (hasFoto) {
-                    createPreviewButton(buttonsWrapper, item.link, "Preview Versi Foto", "camera", true);
-                }
+                // 3 VARIANTS -> MIXED
+                // Item 1 (Primary)
+                const v1 = sortedVariants[0];
+                const d1 = getVariantDetails(v1, item, sortedVariants);
+                createPreviewButton(buttonsWrapper, d1.url, "Preview " + d1.label, d1.icon, true);
 
-                // Row 2: Animasi & No Foto
-                if (hasAnimasi || hasNoFoto) {
-                    const row2 = document.createElement('div');
-                    row2.className = "grid grid-cols-2 gap-2";
-                    
-                    if (hasAnimasi) {
-                        const url = (variants.length > 1) ? baseUrl + "-animasi" : item.link;
-                        createPreviewButton(row2, url, "Versi Animasi", "play", false);
-                    }
-                    if (hasNoFoto) {
-                        const url = (variants.length > 1) ? baseUrl + "-tanpa-foto" : item.link;
-                        createPreviewButton(row2, url, "Tanpa Foto", "doc", false);
-                    }
-                    
-                    // If only one item in row 2, adjust grid to 1 col if preferred, or keep 2 to maintain size
-                    const countRow2 = (hasAnimasi ? 1 : 0) + (hasNoFoto ? 1 : 0);
-                    if(countRow2 === 1) row2.className = "grid grid-cols-1";
+                // Rest (Grid)
+                const grid = document.createElement('div');
+                grid.className = "grid grid-cols-2 gap-2";
+                buttonsWrapper.appendChild(grid);
 
-                    buttonsWrapper.appendChild(row2);
+                for(let i=1; i<sortedVariants.length; i++) {
+                    const v = sortedVariants[i];
+                    const d = getVariantDetails(v, item, sortedVariants);
+                    createPreviewButton(grid, d.url, d.label, d.icon, false);
                 }
             }
 
@@ -502,6 +512,29 @@
                 progressBar.style.width = Math.max(10, scrollPct) + "%";
             };
             progressBar.style.width = "10%";
+        }
+
+        // --- HELPER UNTUK INFO VARIAN ---
+        function getVariantDetails(variant, item, allVariants) {
+            const baseUrl = item.link.replace(/\/$/, ""); 
+            let url = item.link;
+            let label = "Preview";
+            let icon = "default";
+
+            if (variant === 'foto') {
+                url = item.link;
+                label = "Versi Foto";
+                icon = "camera";
+            } else if (variant === 'animasi') {
+                url = allVariants.length > 1 ? baseUrl + "-animasi" : item.link;
+                label = "Versi Animasi";
+                icon = "play";
+            } else if (variant === 'no-foto') {
+                url = allVariants.length > 1 ? baseUrl + "-tanpa-foto" : item.link;
+                label = "Tanpa Foto";
+                icon = "doc";
+            }
+            return { url, label, icon };
         }
 
         // --- GALLERY / LIGHTBOX FUNCTIONS ---
