@@ -45,9 +45,9 @@
         .snap-center { scroll-snap-align: center; }
         
         /* Transisi Halaman ala App */
-        .view-section { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .view-section { display: none; animation: fadeIn 0.2s ease-out; }
         .view-active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 
@@ -56,7 +56,7 @@
     <!-- =======================
          VIEW 1: HOME (TIER LIST)
     ======================== -->
-    <div id="view-home" class="view-section view-active">
+    <div id="view-home" class="view-section">
         <!-- Header Home -->
         <div class="sticky top-0 z-40 bg-wa-header shadow-md border-b border-wa-divider">
             <div class="px-4 h-14 flex justify-between items-center max-w-md mx-auto">
@@ -67,7 +67,7 @@
                 </div>
             </div>
             
-            <!-- Filter Chips (Optional jika mau filter cepat) -->
+            <!-- Filter Chips -->
             <div class="px-4 pb-3 flex gap-2 overflow-x-auto hide-scroll max-w-md mx-auto">
                 <button class="bg-[#374248] text-wa-teal px-4 py-1.5 rounded-full text-xs font-medium border border-wa-divider">Semua</button>
                 <button class="bg-transparent text-wa-gray px-4 py-1.5 rounded-full text-xs font-medium border border-wa-divider">Wedding</button>
@@ -87,7 +87,7 @@
 
         <!-- Container List Tier -->
         <div id="tier-list-container" class="max-w-md mx-auto pb-10 space-y-2 mt-2">
-            <!-- Disini akan di-inject Section per Tier (Starter, Bronze, dll) -->
+            <!-- Inject via JS -->
         </div>
     </div>
 
@@ -99,7 +99,7 @@
         <!-- Header Category -->
         <div class="sticky top-0 z-40 bg-wa-header shadow-md border-b border-wa-divider">
             <div class="px-2 h-14 flex items-center gap-2 max-w-md mx-auto">
-                <button onclick="goHome()" class="p-2 rounded-full hover:bg-[#374248]">
+                <button onclick="goBack()" class="p-2 rounded-full hover:bg-[#374248]">
                     <svg class="w-6 h-6 text-wa-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 </button>
                 <h1 id="cat-header-title" class="font-medium text-lg text-wa-light">Nama Kategori</h1>
@@ -107,7 +107,7 @@
         </div>
 
         <div id="cat-grid-container" class="max-w-md mx-auto p-3 grid grid-cols-2 gap-3">
-            <!-- Grid produk full disini -->
+            <!-- Inject via JS -->
         </div>
     </div>
 
@@ -130,19 +130,15 @@
             </div>
         </div>
 
-        <!-- 1:1 Image Slider Container with Peeking Logic -->
+        <!-- 1:1 Image Slider -->
         <div class="max-w-md mx-auto relative bg-black">
-            <!-- Aspect Ratio 1:1 (Square) -->
             <div class="w-full aspect-square relative overflow-hidden">
                 <div id="detail-slider" class="flex overflow-x-auto snap-x snap-mandatory hide-scroll h-full items-center px-4 gap-3">
-                    <!-- Images Injected Here -->
+                    <!-- Inject via JS -->
                 </div>
             </div>
-            
-            <!-- Indicator Dots -->
             <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 z-10">
                 <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
-                <div class="w-1.5 h-1.5 rounded-full bg-white/40"></div>
                 <div class="w-1.5 h-1.5 rounded-full bg-white/40"></div>
             </div>
         </div>
@@ -162,7 +158,7 @@
 
                 <!-- PREVIEW BUTTONS VARIANT -->
                 <div id="detail-preview-buttons" class="mt-6">
-                    <!-- Tombol preview akan diinject di sini sebagai grid -->
+                    <!-- Inject via JS -->
                 </div>
             </div>
 
@@ -175,17 +171,13 @@
             <!-- Variants Chips -->
             <div class="mt-6 pt-4 border-t border-wa-divider">
                 <h3 class="text-sm font-medium text-wa-gray uppercase tracking-wide mb-3">Fitur Paket</h3>
-                <div id="detail-variants" class="flex flex-wrap gap-2">
-                    <!-- Chips inserted here -->
-                </div>
+                <div id="detail-variants" class="flex flex-wrap gap-2"></div>
             </div>
         </div>
 
         <!-- Sticky Footer Action -->
         <div class="fixed bottom-0 w-full bg-wa-header border-t border-wa-divider p-3 z-50">
             <div class="max-w-md mx-auto flex gap-3">
-                <!-- Preview sudah pindah ke atas, tombol ini jadi opsi Live Preview Umum atau dibuang jika tidak perlu -->
-                <!-- Kita sembunyikan tombol demo bawah supaya fokus ke tombol demo varian di atas -->
                 <button onclick="kirimPesanWA()" class="flex-1 bg-wa-teal text-white font-medium py-3 rounded-full shadow-lg text-sm flex justify-center items-center gap-2 hover:bg-[#008f6f] transition">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.017-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
                     Pesan via WhatsApp
@@ -197,7 +189,6 @@
 
     <!-- SCRIPT LOGIC -->
     <script>
-        // CONFIG FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyDq6LjlUFRDm5CqGSqVLiJ9gItIyw71bAU",
             authDomain: "db-katalog.firebaseapp.com",
@@ -209,57 +200,77 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // VAR GLOBAL
         let allProducts = [];
         let groupedProducts = {};
         const IMAGEKIT_BASE = "https://ik.imagekit.io/undangandigital";
-        // Definisi urutan Tier
         const TIER_ORDER = ["Starter", "Bronze", "Silver", "Gold", "Platinum", "Diamond"];
+        const TIER_CONFIG = { "Starter": "🟢", "Bronze": "🟤", "Silver": "⚪", "Gold": "🟡", "Platinum": "🔵", "Diamond": "💎" };
 
-        // Config Emoji untuk Tier
-        const TIER_CONFIG = {
-            "Starter": "🟢",
-            "Bronze": "🟤",
-            "Silver": "⚪",
-            "Gold": "🟡",
-            "Platinum": "🔵",
-            "Diamond": "💎"
-        };
+        // --- SISTEM ROUTER & DEEP LINKING ---
+        // Listener Utama: Mendeteksi perubahan URL (Hash)
+        window.addEventListener('hashchange', router);
 
-        // FUNGSI NAVIGASI HALAMAN (ROUTER SEDERHANA)
-        let navigationStack = ['view-home'];
+        function router() {
+            const hash = window.location.hash;
+            
+            // Default: Home
+            if (!hash || hash === '#/') {
+                switchView('view-home');
+                return;
+            }
 
-        function showView(viewId) {
-            document.querySelectorAll('.view-section').forEach(el => {
-                el.classList.remove('view-active');
-            });
+            // Route: Category (/#/category/Gold)
+            if (hash.startsWith('#/category/')) {
+                // Decode URI Component penting kalau ada spasi (meski di tier jarang)
+                const tier = decodeURIComponent(hash.split('/')[2]);
+                renderCategoryView(tier);
+                switchView('view-category');
+                return;
+            }
+
+            // Route: Detail (/#/detail/id123)
+            if (hash.startsWith('#/detail/')) {
+                const id = hash.split('/')[2];
+                // Pastikan data sudah ada sebelum render
+                if (allProducts.length > 0) {
+                    const item = allProducts.find(p => p.id === id);
+                    if (item) {
+                        renderDetailView(item);
+                        switchView('view-detail');
+                    } else {
+                        // Jika item tidak ketemu (link salah), balik ke home
+                        window.location.hash = '#/';
+                    }
+                } else {
+                    // Jika data belum load (akses langsung via link), tunggu data load dulu
+                    // Logic ini di-handle di 'loadData'
+                }
+                return;
+            }
+        }
+
+        // Fungsi Ganti Tampilan
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('view-active'));
             document.getElementById(viewId).classList.add('view-active');
             window.scrollTo(0,0);
         }
 
-        function goHome() {
-            navigationStack = ['view-home'];
-            showView('view-home');
+        // Fungsi Navigasi (Tinggal ubah hash, router yang kerja)
+        function navigateTo(path) {
+            window.location.hash = path;
         }
 
         function goBack() {
-            if (navigationStack.length > 1) {
-                navigationStack.pop(); 
-                const prevView = navigationStack[navigationStack.length - 1];
-                showView(prevView);
-            } else {
-                goHome();
-            }
+            // Gunakan history browser native
+            window.history.back();
         }
 
-        // LOAD DATA
+        // --- LOAD DATA ---
         async function loadData() {
             try {
                 const snapshot = await db.collection('themes').get();
-                
-                if (snapshot.empty) {
-                    alert("Data kosong!"); return;
-                }
+                if (snapshot.empty) { alert("Data kosong!"); return; }
 
                 allProducts = snapshot.docs.map(doc => {
                     let d = doc.data();
@@ -277,6 +288,7 @@
                     };
                 });
 
+                // Grouping
                 groupedProducts = {};
                 allProducts.forEach(p => {
                     const tier = p.tier;
@@ -286,14 +298,18 @@
 
                 document.getElementById('home-loading').style.display = 'none';
                 renderHome();
+                
+                // JALANKAN ROUTER SETELAH DATA SIAP
+                // Ini penting untuk Deep Linking (misal buka link detail langsung)
+                router();
 
             } catch (error) {
                 console.error("Error:", error);
-                alert("Gagal memuat data: " + error.message);
             }
         }
 
-        // RENDER HALAMAN UTAMA (TIER LIST)
+        // --- RENDERERS ---
+
         function renderHome() {
             const container = document.getElementById('tier-list-container');
             container.innerHTML = '';
@@ -302,7 +318,6 @@
                 const products = groupedProducts[tier];
                 if (!products || products.length === 0) return;
 
-                // Hitung Min-Max Harga
                 const prices = products.map(p => p.price_real);
                 const minPrice = Math.min(...prices);
                 const maxPrice = Math.max(...prices);
@@ -310,22 +325,19 @@
                     ? `All price at Rp${Math.floor(minPrice/1000)}k` 
                     : `Rp${Math.floor(minPrice/1000)}k - Rp${Math.floor(maxPrice/1000)}k`;
 
-                // Ambil Emoji
                 const emoji = TIER_CONFIG[tier] || "📦";
-
                 const previewProducts = products.slice(0, 3);
-                const section = document.createElement('div');
-                section.className = "bg-wa-header mb-2 py-4 shadow-sm"; 
                 
                 let cardsHtml = '';
                 previewProducts.forEach(item => {
                     const imgUrl = `${IMAGEKIT_BASE}/${item.folder_id}/01.png?tr=w-300`;
                     const price = 'Rp' + Math.floor(item.price_real / 1000) + 'k';
                     
+                    // ONCLICK GANTI KE NAVIGATE
                     cardsHtml += `
-                        <div onclick='openDetail(${JSON.stringify(item).replace(/'/g, "&#39;")})' class="cursor-pointer active:opacity-75 transition">
+                        <div onclick="navigateTo('#/detail/${item.id}')" class="cursor-pointer active:opacity-75 transition">
                             <div class="aspect-square rounded-lg overflow-hidden bg-wa-bg mb-2 border border-wa-divider/30">
-                                <img src="${imgUrl}" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://placehold.co/300?text=No+Img'">
+                                <img src="${imgUrl}" class="w-full h-full object-cover" loading="lazy">
                             </div>
                             <h4 class="text-xs text-wa-light font-medium truncate">${item.title}</h4>
                             <span class="text-xs text-wa-teal font-bold">${price}</span>
@@ -333,6 +345,8 @@
                     `;
                 });
 
+                const section = document.createElement('div');
+                section.className = "bg-wa-header mb-2 py-4 shadow-sm"; 
                 section.innerHTML = `
                     <div class="px-4 flex justify-between items-center mb-3">
                         <div>
@@ -342,7 +356,7 @@
                             </div>
                             <p class="text-xs text-wa-gray mt-0.5 ml-7 font-medium">${priceRange}</p>
                         </div>
-                        <button onclick="openCategory('${tier}')" class="bg-[#2a373f] border border-wa-divider text-wa-teal text-xs font-bold px-3 py-1.5 rounded-full hover:bg-wa-teal hover:text-white transition active:scale-95 shadow-sm">
+                        <button onclick="navigateTo('#/category/${tier}')" class="bg-[#2a373f] border border-wa-divider text-wa-teal text-xs font-bold px-3 py-1.5 rounded-full hover:bg-wa-teal hover:text-white transition active:scale-95 shadow-sm">
                             Lihat Semua
                         </button>
                     </div>
@@ -350,18 +364,15 @@
                         ${cardsHtml}
                     </div>
                 `;
-
                 container.appendChild(section);
             });
         }
 
-        // RENDER HALAMAN KATEGORI FULL (VIEW 3)
-        function openCategory(tierName) {
+        function renderCategoryView(tierName) {
             const products = groupedProducts[tierName];
             if(!products) return;
 
             document.getElementById('cat-header-title').innerText = `Paket ${tierName}`;
-            
             const container = document.getElementById('cat-grid-container');
             container.innerHTML = '';
 
@@ -371,7 +382,7 @@
 
                 const card = document.createElement('div');
                 card.className = "bg-wa-header p-2 rounded-lg border border-wa-divider active:scale-[0.98] transition cursor-pointer";
-                card.onclick = () => openDetail(item);
+                card.onclick = () => navigateTo(`#/detail/${item.id}`);
                 
                 card.innerHTML = `
                     <div class="aspect-square rounded overflow-hidden bg-wa-bg mb-2">
@@ -382,43 +393,33 @@
                 `;
                 container.appendChild(card);
             });
-
-            showView('view-category');
-            navigationStack.push('view-category');
         }
 
-        // RENDER HALAMAN DETAIL (VIEW 4)
-        function openDetail(item) {
+        function renderDetailView(item) {
             document.getElementById('detail-title').innerText = item.title;
             document.getElementById('detail-price-real').innerText = 'Rp ' + item.price_real.toLocaleString('id-ID');
             document.getElementById('detail-price-fake').innerText = 'Rp ' + item.price_fake.toLocaleString('id-ID');
             document.getElementById('detail-desc').innerText = item.description;
 
-            // --- 1. SET BUTTONS PREVIEW BERDASARKAN VARIAN ---
+            // PREVIEW BUTTONS
             const previewContainer = document.getElementById('detail-preview-buttons');
             previewContainer.innerHTML = '';
             
-            // Tambah Judul Section agar user sadar ini tombol preview
             const titleLabel = document.createElement('h3');
             titleLabel.className = "text-xs font-bold text-wa-gray uppercase tracking-wider mb-2 col-span-full";
             titleLabel.innerHTML = "Lihat <span class='text-wa-teal'>Live Pre</span>view";
             
-            // Container sementara untuk grid (supaya judul ga masuk grid)
             const gridWrapper = document.createElement('div');
-            
             const baseUrl = item.link.replace(/\/$/, ""); 
-            
             const sortOrder = ['foto', 'animasi', 'no-foto'];
             const sortedVariants = (item.variants || []).sort((a,b) => sortOrder.indexOf(a) - sortOrder.indexOf(b));
 
             let gridClass = "grid gap-3";
-            if (sortedVariants.length === 0 || sortedVariants.length === 1) gridClass += " grid-cols-1";
+            if (sortedVariants.length <= 1) gridClass += " grid-cols-1";
             else if (sortedVariants.length === 2) gridClass += " grid-cols-2";
             else gridClass += " grid-cols-3";
 
             gridWrapper.className = gridClass;
-            
-            // Append Judul dulu
             previewContainer.appendChild(titleLabel);
             previewContainer.appendChild(gridWrapper);
 
@@ -431,26 +432,19 @@
                     let iconType = "default";
                     
                     if (variant === 'foto') {
-                        url = item.link; 
-                        label = "Versi Foto";
-                        iconType = "camera";
+                        url = item.link; label = "Versi Foto"; iconType = "camera";
                     } else if (variant === 'animasi') {
-                        if(sortedVariants.length > 1) url = baseUrl + "-animasi";
-                        else url = item.link;
-                        label = "Versi Animasi";
-                        iconType = "play";
+                        url = sortedVariants.length > 1 ? baseUrl + "-animasi" : item.link;
+                        label = "Versi Animasi"; iconType = "play";
                     } else if (variant === 'no-foto') {
-                        if(sortedVariants.length > 1) url = baseUrl + "-tanpa-foto";
-                        else url = item.link;
-                        label = "Tanpa Foto";
-                        iconType = "doc";
+                        url = sortedVariants.length > 1 ? baseUrl + "-tanpa-foto" : item.link;
+                        label = "Tanpa Foto"; iconType = "doc";
                     }
-
                     createPreviewButton(gridWrapper, url, label, iconType);
                 });
             }
 
-            // --- 2. SET CHIPS VARIAN ---
+            // VARIANTS
             const variantContainer = document.getElementById('detail-variants');
             variantContainer.innerHTML = '';
             if(item.variants && item.variants.length > 0) {
@@ -461,58 +455,35 @@
                 variantContainer.innerHTML = '<span class="text-xs text-wa-gray italic">Tidak ada info fitur khusus</span>';
             }
 
-            // --- 3. RENDER IMAGE SLIDER ---
+            // SLIDER
             const slider = document.getElementById('detail-slider');
             slider.innerHTML = '';
-
             for (let i = 1; i <= 10; i++) {
                 const num = String(i).padStart(2, '0');
-                let imgUrl;
-                if (i <= 8) imgUrl = `${IMAGEKIT_BASE}/${item.folder_id}/${num}.png`;
-                else imgUrl = `${IMAGEKIT_BASE}/feature-service/${num}.png`;
-
+                let imgUrl = (i <= 8) ? `${IMAGEKIT_BASE}/${item.folder_id}/${num}.png` : `${IMAGEKIT_BASE}/feature-service/${num}.png`;
                 imgUrl += "?tr=w-800"; 
                 
                 const slideItem = document.createElement('div');
                 slideItem.className = "snap-center shrink-0 w-[85%] h-full flex items-center justify-center bg-wa-bg rounded-lg overflow-hidden relative border border-wa-divider/30";
-                
-                slideItem.innerHTML = `
-                    <img src="${imgUrl}" class="w-full h-full object-cover" loading="${i===1?'eager':'lazy'}" onerror="this.src='https://placehold.co/400x500/333?text=Slide+Error'">
-                `;
+                slideItem.innerHTML = `<img src="${imgUrl}" class="w-full h-full object-cover" loading="${i===1?'eager':'lazy'}" onerror="this.src='https://placehold.co/400x500/333?text=Slide+Error'">`;
                 slider.appendChild(slideItem);
             }
-
             slider.scrollLeft = 0;
             window.currentItem = item;
-
-            showView('view-detail');
-            navigationStack.push('view-detail');
         }
 
-        // Helper untuk membuat tombol preview Compact & Elegan
         function createPreviewButton(container, url, text, iconType) {
             let iconSvg = '';
-            if (iconType === 'camera') {
-                iconSvg = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>';
-            } else if (iconType === 'play') {
-                iconSvg = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
-            } else if (iconType === 'doc') {
-                iconSvg = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>';
-            } else {
-                iconSvg = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>';
-            }
+            if (iconType === 'camera') iconSvg = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>';
+            else if (iconType === 'play') iconSvg = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+            else if (iconType === 'doc') iconSvg = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>';
+            else iconSvg = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>';
 
             const btn = document.createElement('a');
             btn.href = url;
             btn.target = "_blank";
-            // Style Compact Card: Warna sedikit lebih terang, border hijau tipis
             btn.className = "flex flex-col items-center justify-center gap-2 bg-wa-button border border-wa-teal/30 p-3 rounded-xl hover:bg-[#344047] hover:border-wa-teal transition group active:scale-95 h-24";
-            btn.innerHTML = `
-                <div class="text-wa-teal group-hover:text-white transition-colors duration-300">
-                    ${iconSvg}
-                </div>
-                <span class="text-xs font-medium text-wa-light text-center leading-tight">${text}</span>
-            `;
+            btn.innerHTML = `<div class="text-wa-teal group-hover:text-white transition-colors duration-300">${iconSvg}</div><span class="text-xs font-medium text-wa-light text-center leading-tight">${text}</span>`;
             container.appendChild(btn);
         }
 
@@ -520,7 +491,7 @@
             if(!window.currentItem) return;
             const item = window.currentItem;
             const text = `Halo Admin, saya tertarik dengan tema undangan *${item.title}* (Paket ${item.tier}) seharga Rp ${item.price_real.toLocaleString('id-ID')}. Info lebih lanjut?`;
-            const url = `https://wa.me/6281234567890?text=${encodeURIComponent(text)}`; // GANTI NO WA DISINI
+            const url = `https://wa.me/6281234567890?text=${encodeURIComponent(text)}`;
             window.open(url, '_blank');
         }
 
