@@ -3,48 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Upload Katalog</title>
+    <title>Admin Dashboard - Upload Katalog V2</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Library untuk baca CSV -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-200 font-sans min-h-screen p-8">
 
     <div class="max-w-2xl mx-auto">
-        <h1 class="text-3xl font-bold text-blue-500 mb-2">⚡ Admin Katalog Uploader</h1>
-        <p class="text-slate-400 mb-8">Upload file CSV katalog terbaru untuk update database Firebase.</p>
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-blue-500">⚡ Admin Uploader V2</h1>
+                <p class="text-slate-400 text-sm">Support: Photo Required & Auto-Clean</p>
+            </div>
+            <div class="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700">
+                <span id="db-status" class="text-xs font-bold text-yellow-500">Connecting...</span>
+            </div>
+        </div>
 
-        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
-            <label class="block mb-2 text-sm font-medium text-slate-300">Pilih File CSV (dari Excel)</label>
+        <!-- Area Upload -->
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg relative overflow-hidden">
+            <!-- Loading Overlay -->
+            <div id="loading-overlay" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center hidden">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+                <p class="text-blue-400 font-mono animate-pulse">Sedang mengupload...</p>
+            </div>
+
+            <label class="block mb-2 text-sm font-medium text-slate-300">1. Pilih File CSV Terbaru</label>
             <input type="file" id="csvFile" accept=".csv" class="block w-full text-sm text-slate-300
               file:mr-4 file:py-2 file:px-4
               file:rounded-full file:border-0
               file:text-sm file:font-semibold
               file:bg-blue-600 file:text-white
-              hover:file:bg-blue-700 cursor-pointer mb-4
+              hover:file:bg-blue-700 cursor-pointer mb-6 bg-slate-900/50 rounded-lg border border-slate-600
             "/>
             
-            <button onclick="processUpload()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition flex justify-center items-center gap-2">
+            <label class="block mb-2 text-sm font-medium text-slate-300">2. Aksi</label>
+            <button onclick="processUpload()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition flex justify-center items-center gap-2 shadow-lg shadow-green-900/20">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                 </svg>
-                UPLOAD KE DATABASE
+                UPLOAD & UPDATE DATABASE
             </button>
         </div>
 
+        <!-- Terminal Log -->
         <div class="mt-8">
-            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">System Log</h3>
-            <div id="logArea" class="bg-black text-green-400 p-4 rounded-lg font-mono text-xs h-64 overflow-y-auto border border-slate-700 shadow-inner">
-                <p>> Menunggu file...</p>
+            <div class="flex justify-between items-end mb-2">
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">System Log</h3>
+                <button onclick="document.getElementById('logArea').innerHTML = ''" class="text-[10px] text-slate-600 hover:text-slate-400">Clear Log</button>
+            </div>
+            <div id="logArea" class="bg-black text-green-400 p-4 rounded-lg font-mono text-xs h-64 overflow-y-auto border border-slate-800 shadow-inner leading-relaxed">
+                <p class="opacity-50">> Menunggu file CSV...</p>
             </div>
         </div>
     </div>
 
+    <!-- Script Utama -->
     <script type="module">
         // Import Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getFirestore, doc, writeBatch, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-        // CONFIG USER (SUDAH SAYA MASUKKAN)
+        // CONFIG USER (Sesuai punya kamu)
         const firebaseConfig = {
             apiKey: "AIzaSyDq6LjlUFRDm5CqGSqVLiJ9gItIyw71bAU",
             authDomain: "db-katalog.firebaseapp.com",
@@ -57,7 +78,17 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Expose function ke window agar bisa dipanggil tombol HTML
+        // Cek Koneksi
+        try {
+            const test = collection(db, 'themes');
+            document.getElementById('db-status').innerText = "✅ Firebase Connected";
+            document.getElementById('db-status').className = "text-xs font-bold text-green-500";
+        } catch(e) {
+            document.getElementById('db-status').innerText = "❌ Connection Failed";
+            document.getElementById('db-status').className = "text-xs font-bold text-red-500";
+        }
+
+        // Expose function ke window
         window.processUpload = function() {
             const fileInput = document.getElementById('csvFile');
             const file = fileInput.files[0];
@@ -67,21 +98,30 @@
                 return;
             }
 
+            document.getElementById('loading-overlay').classList.remove('hidden');
             log(`> Membaca file: ${file.name}...`);
 
-            // Parse CSV pakai library PapaParse
+            // Parse CSV
             Papa.parse(file, {
-                header: true, // Baris pertama dianggap header
+                header: true,
                 skipEmptyLines: true,
                 complete: async function(results) {
                     const dataMentah = results.data;
                     log(`> Ditemukan ${dataMentah.length} baris data.`);
-                    log(`> Memulai proses upload ke Firebase...`);
                     
+                    // Validasi kolom penting
+                    const sample = dataMentah[0];
+                    if (!sample['photo-required'] && !sample['photo_required']) {
+                        log("⚠️ WARNING: Kolom 'photo-required' tidak ditemukan di CSV! Fitur alert mungkin tidak jalan.", "text-yellow-500");
+                    }
+
+                    log(`> Memulai proses upload ke Firebase...`);
                     await uploadToFirebase(dataMentah);
+                    document.getElementById('loading-overlay').classList.add('hidden');
                 },
                 error: function(error) {
                     log(`❌ Error parsing CSV: ${error.message}`, "text-red-500");
+                    document.getElementById('loading-overlay').classList.add('hidden');
                 }
             });
         };
@@ -89,44 +129,52 @@
         async function uploadToFirebase(dataList) {
             let successCount = 0;
             let errorCount = 0;
-
-            // Kita pakai Batch (rombongan) biar ngebut dan hemat koneksi
-            // Firebase limit batch maks 500 per request. Jadi kita chunk.
-            const batchSize = 400; 
+            const batchSize = 400; // Limit Firestore Batch
             
             for (let i = 0; i < dataList.length; i += batchSize) {
                 const batch = writeBatch(db);
                 const chunk = dataList.slice(i, i + batchSize);
 
                 chunk.forEach((row) => {
-                    // 1. Validasi ID
+                    // Skip jika ID kosong
                     if (!row.id || row.id.trim() === "") return;
 
-                    // 2. Bersihkan Data (Format Cleaning)
-                    // Convert harga ke angka (hilangkan 'Rp' atau titik jika ada)
+                    // 1. Bersihkan Harga (Hapus Rp, titik, koma)
                     const cleanPriceReal = parseInt(String(row['price-real']).replace(/[^0-9]/g, '')) || 0;
                     const cleanPriceFake = parseInt(String(row['price-fake']).replace(/[^0-9]/g, '')) || 0;
                     
-                    // Convert variants string "foto, animasi" -> Array ["foto", "animasi"]
+                    // 2. Bersihkan Varian (Split koma & Trim spasi)
                     let variantsArray = [];
                     if (row.variants) {
                         variantsArray = row.variants.split(',').map(item => item.trim());
                     }
 
-                    // Siapkan object bersih
+                    // 3. Bersihkan Deskripsi (Handle encoding error)
+                    let cleanDesc = row.description || "";
+                    // Ganti karakter  dengan bullet/strip jika ada (fallback)
+                    cleanDesc = cleanDesc.replace(/\uFFFD/g, '-'); 
+
+                    // 4. Siapkan Object Data
                     const docRef = doc(db, "themes", row.id);
+                    
+                    // MAPPING DATA
+                    // Pastikan key di kiri sesuai dengan apa yang dibaca index.html
                     const cleanData = {
                         id: row.id,
-                        title: row.title || row['title '], // handle typo spasi di csv
+                        title: row.title || row['title '] || "Tanpa Judul", // Handle typo spasi di header csv
                         category: row.category,
                         tier: row.tier,
                         price_real: cleanPriceReal,
                         price_fake: cleanPriceFake,
                         link: row.link,
-                        description: row.description,
+                        description: cleanDesc,
                         variants: variantsArray,
                         folder_id: row.folder_id,
-                        updated_at: new Date() // Timestamp update
+                        
+                        // KOLOM BARU (Baca dari photo-required atau photo_required)
+                        "photo-required": row['photo-required'] || row['photo_required'] || 'no',
+                        
+                        updated_at: new Date()
                     };
 
                     batch.set(docRef, cleanData);
@@ -135,7 +183,7 @@
                 try {
                     await batch.commit();
                     successCount += chunk.length;
-                    log(`✅ Batch ${Math.floor(i/batchSize) + 1} sukses! (${successCount} data terupload)`);
+                    log(`✅ Batch ${Math.floor(i/batchSize) + 1} sukses! (${successCount}/${dataList.length})`);
                 } catch (e) {
                     errorCount += chunk.length;
                     log(`❌ Gagal upload batch: ${e.message}`, "text-red-500");
@@ -143,17 +191,18 @@
             }
 
             log(`🎉 SELESAI! Sukses: ${successCount}, Gagal: ${errorCount}`);
-            if(successCount > 0) alert("Sukses update database!");
+            if(successCount > 0) {
+                alert(`Sukses update ${successCount} tema ke database!`);
+            }
         }
 
-        // Helper Log
         function log(message, color = "text-green-400") {
             const logArea = document.getElementById('logArea');
             const p = document.createElement('p');
-            p.className = `${color} mb-1`;
+            p.className = `${color} mb-1 border-b border-white/5 pb-1`;
             p.innerText = message;
             logArea.appendChild(p);
-            logArea.scrollTop = logArea.scrollHeight; // Auto scroll ke bawah
+            logArea.scrollTop = logArea.scrollHeight;
         }
     </script>
 </body>
