@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>UndanganWeb - Katalog Digital</title>
+    <title>Katalog Undangan Digital</title>
     
     <!-- 1. TAILWIND CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,121 +12,188 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        wa: {
+                            bg: '#111b21',       /* Background Utama Gelap */
+                            header: '#202c33',   /* Header/Card */
+                            teal: '#00a884',     /* Hijau WA */
+                            light: '#e9edef',    /* Teks Utama */
+                            gray: '#8696a0',     /* Teks Secondary */
+                            divider: '#222d36'   /* Garis Pembatas */
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
     
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #111b21; color: #e9edef; -webkit-tap-highlight-color: transparent; }
         .hide-scroll::-webkit-scrollbar { display: none; }
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-        .active-tab { background-color: #0f172a; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .inactive-tab { background-color: white; color: #475569; border: 1px solid #e2e8f0; }
-        /* Smooth Scroll untuk Slider */
         .snap-x { scroll-snap-type: x mandatory; }
         .snap-center { scroll-snap-align: center; }
+        
+        /* Transisi Halaman ala App */
+        .view-section { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .view-active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 
-<body class="text-slate-800 pb-24">
+<body class="antialiased min-h-screen pb-20">
 
-    <!-- HEADER -->
-    <div class="fixed top-0 w-full bg-white/95 backdrop-blur z-40 shadow-sm border-b border-slate-200">
-        <div class="px-4 py-3 flex justify-between items-center max-w-md mx-auto">
-            <div>
-                <h1 class="font-bold text-lg text-slate-900 tracking-tight">UndanganWeb</h1>
-                <p id="status-text" class="text-[10px] font-medium text-orange-500">Menghubungkan...</p>
-            </div>
-            <div class="bg-slate-50 p-2 rounded-full border border-slate-100">
-               <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-            </div>
-        </div>
-
-        <!-- Search Bar -->
-        <div class="px-4 pb-2 max-w-md mx-auto">
-            <input type="text" id="search-input" placeholder="Cari tema (Jawa, Floral...)" onkeyup="filterProducts()"
-                class="w-full bg-slate-100 text-sm py-2.5 px-4 rounded-xl focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all border-transparent border focus:border-blue-100">
-        </div>
-
-        <!-- Kategori Tabs -->
-        <div class="flex overflow-x-auto gap-2 px-4 pb-3 hide-scroll max-w-md mx-auto mt-1" id="category-container">
-            <button onclick="setCategory('Semua')" class="cat-btn active-tab px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all active:scale-95">Semua</button>
-            <button onclick="setCategory('Wedding')" class="cat-btn inactive-tab px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all active:scale-95">Wedding</button>
-            <button onclick="setCategory('Khitan')" class="cat-btn inactive-tab px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all active:scale-95">Khitan</button>
-            <button onclick="setCategory('Formal')" class="cat-btn inactive-tab px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all active:scale-95">Formal</button>
-        </div>
-    </div>
-
-    <div class="h-44 w-full"></div>
-
-    <!-- LOADING STATE -->
-    <div id="loading-skeleton" class="px-4 grid grid-cols-2 gap-3 max-w-md mx-auto">
-        <div class="bg-white p-2 rounded-xl h-48 animate-pulse bg-slate-200"></div>
-        <div class="bg-white p-2 rounded-xl h-48 animate-pulse bg-slate-200"></div>
-        <div class="bg-white p-2 rounded-xl h-48 animate-pulse bg-slate-200"></div>
-        <div class="bg-white p-2 rounded-xl h-48 animate-pulse bg-slate-200"></div>
-    </div>
-
-    <!-- ERROR AREA -->
-    <div id="error-area" class="hidden px-4 text-center mt-10">
-        <div class="bg-red-50 p-4 rounded-xl border border-red-200 text-red-600 text-sm">
-            <p class="font-bold">Gagal Memuat Data</p>
-            <p id="error-msg" class="text-xs mt-1"></p>
-        </div>
-    </div>
-
-    <!-- GRID PRODUK UTAMA -->
-    <div id="product-grid" class="px-3 grid grid-cols-2 gap-3 max-w-md mx-auto pb-10">
-        <!-- Produk akan muncul disini -->
-    </div>
-
-    <!-- MODAL DETAIL -->
-    <div id="detail-modal" class="fixed inset-0 bg-white z-50 overflow-y-auto hidden flex-col transition-transform duration-300 translate-y-full">
-        
-        <!-- Navbar Modal -->
-        <div class="absolute top-0 w-full p-4 flex justify-between items-center z-10 pointer-events-none">
-            <button onclick="closeModal()" class="bg-black/30 backdrop-blur text-white p-2 rounded-full pointer-events-auto hover:bg-black/50">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-            </button>
-        </div>
-
-        <!-- Slider Gambar (Horizontal Scroll) -->
-        <div id="modal-slider" class="h-[60vh] bg-slate-200 relative shrink-0 overflow-x-auto flex snap-x snap-mandatory hide-scroll">
-             <!-- Slide gambar akan di-inject via JS -->
-        </div>
-        
-        <!-- Badge Indikator Geser -->
-        <div class="absolute top-[55vh] right-4 z-10">
-            <span class="bg-black/50 backdrop-blur text-white text-[10px] px-2 py-1 rounded-full">Geser 👉</span>
-        </div>
-
-        <!-- Konten Detail -->
-        <div class="flex-1 p-6 -mt-8 bg-white rounded-t-[2rem] relative shadow-[0_-5px_20px_rgba(0,0,0,0.1)] z-0">
-            <div class="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6"></div>
-            
-            <span id="modal-category" class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100 uppercase tracking-wider"></span>
-            <h1 id="modal-title" class="text-2xl font-bold text-slate-900 mt-2 leading-tight"></h1>
-
-            <div class="flex items-end gap-2 mt-2 pb-6 border-b border-slate-100">
-                <p id="modal-price-real" class="text-2xl font-bold text-green-600"></p>
-                <p id="modal-price-fake" class="text-sm text-slate-400 line-through mb-1"></p>
+    <!-- =======================
+         VIEW 1: HOME (TIER LIST)
+    ======================== -->
+    <div id="view-home" class="view-section view-active">
+        <!-- Header Home -->
+        <div class="sticky top-0 z-40 bg-wa-header shadow-md border-b border-wa-divider">
+            <div class="px-4 h-14 flex justify-between items-center max-w-md mx-auto">
+                <h1 class="font-medium text-lg text-wa-light tracking-wide">Katalog Undangan</h1>
+                <div class="flex gap-4">
+                    <svg class="w-5 h-5 text-wa-gray" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <svg class="w-5 h-5 text-wa-gray" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                </div>
             </div>
             
-            <div class="mt-6">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Deskripsi</p>
-                <p id="modal-desc" class="text-sm text-slate-600 leading-relaxed whitespace-pre-line font-medium"></p>
+            <!-- Filter Chips (Optional jika mau filter cepat) -->
+            <div class="px-4 pb-3 flex gap-2 overflow-x-auto hide-scroll max-w-md mx-auto">
+                <button class="bg-[#374248] text-wa-teal px-4 py-1.5 rounded-full text-xs font-medium border border-wa-divider">Semua</button>
+                <button class="bg-transparent text-wa-gray px-4 py-1.5 rounded-full text-xs font-medium border border-wa-divider">Wedding</button>
+                <button class="bg-transparent text-wa-gray px-4 py-1.5 rounded-full text-xs font-medium border border-wa-divider">Khitan</button>
             </div>
-            
-            <div class="h-24"></div>
         </div>
 
-        <!-- Footer Modal -->
-        <div class="fixed bottom-0 w-full bg-white border-t border-slate-100 p-4 flex gap-3 z-50 safe-area-bottom">
-            <a id="modal-link" href="#" target="_blank" class="flex-1 bg-slate-50 text-slate-700 font-bold py-3.5 rounded-xl text-center text-sm border border-slate-200 flex items-center justify-center gap-2">Live Preview</a>
-            <button class="flex-[2] bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-slate-300 text-sm">Pesan Sekarang</button>
+        <!-- Loading Skeleton -->
+        <div id="home-loading" class="max-w-md mx-auto p-4 space-y-6">
+            <div class="h-6 w-32 bg-wa-header rounded animate-pulse"></div>
+            <div class="grid grid-cols-3 gap-2">
+                <div class="aspect-[4/5] bg-wa-header rounded animate-pulse"></div>
+                <div class="aspect-[4/5] bg-wa-header rounded animate-pulse"></div>
+                <div class="aspect-[4/5] bg-wa-header rounded animate-pulse"></div>
+            </div>
+        </div>
+
+        <!-- Container List Tier -->
+        <div id="tier-list-container" class="max-w-md mx-auto pb-10 space-y-2 mt-2">
+            <!-- Disini akan di-inject Section per Tier (Starter, Bronze, dll) -->
         </div>
     </div>
 
-    <!-- SCRIPT UTAMA -->
+
+    <!-- =======================
+         VIEW 2: CATEGORY FULL
+    ======================== -->
+    <div id="view-category" class="view-section">
+        <!-- Header Category -->
+        <div class="sticky top-0 z-40 bg-wa-header shadow-md border-b border-wa-divider">
+            <div class="px-2 h-14 flex items-center gap-2 max-w-md mx-auto">
+                <button onclick="goHome()" class="p-2 rounded-full hover:bg-[#374248]">
+                    <svg class="w-6 h-6 text-wa-light" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                </button>
+                <h1 id="cat-header-title" class="font-medium text-lg text-wa-light">Nama Kategori</h1>
+            </div>
+        </div>
+
+        <div id="cat-grid-container" class="max-w-md mx-auto p-3 grid grid-cols-2 gap-3">
+            <!-- Grid produk full disini -->
+        </div>
+    </div>
+
+
+    <!-- =======================
+         VIEW 3: DETAIL PRODUCT
+    ======================== -->
+    <div id="view-detail" class="view-section bg-wa-bg min-h-screen">
+        <!-- Header Detail (Transparan/Overlay) -->
+        <div class="fixed top-0 w-full z-50 max-w-md mx-auto left-0 right-0">
+            <div class="flex justify-between items-center p-4 bg-gradient-to-b from-black/60 to-transparent">
+                <button onclick="goBack()" class="bg-black/30 backdrop-blur p-2 rounded-full text-white hover:bg-black/50">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <div class="flex gap-3">
+                    <button class="bg-black/30 backdrop-blur p-2 rounded-full text-white hover:bg-black/50">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1:1 Image Slider Container with Peeking Logic -->
+        <div class="max-w-md mx-auto relative bg-black">
+            <!-- Aspect Ratio 1:1 (Square) -->
+            <div class="w-full aspect-square relative overflow-hidden">
+                <div id="detail-slider" class="flex overflow-x-auto snap-x snap-mandatory hide-scroll h-full items-center px-4 gap-3">
+                    <!-- Images Injected Here -->
+                    <!-- Logic: Image width < 100% to allow peeking -->
+                </div>
+            </div>
+            
+            <!-- Indicator Dots -->
+            <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 z-10">
+                <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+                <div class="w-1.5 h-1.5 rounded-full bg-white/40"></div>
+                <div class="w-1.5 h-1.5 rounded-full bg-white/40"></div>
+            </div>
+        </div>
+
+        <!-- Content Body -->
+        <div class="max-w-md mx-auto bg-wa-bg p-5 pb-24">
+            <!-- Title & Price -->
+            <div class="border-b border-wa-divider pb-4 mb-4">
+                <div class="flex justify-between items-start">
+                    <h1 id="detail-title" class="text-xl font-medium text-wa-light leading-snug"></h1>
+                    <span id="detail-category" class="text-[10px] text-wa-teal border border-wa-teal/30 px-2 py-0.5 rounded uppercase tracking-wide ml-2 shrink-0">Wedding</span>
+                </div>
+                <div class="mt-2 flex items-center gap-3">
+                    <span id="detail-price-real" class="text-lg font-bold text-wa-light"></span>
+                    <span id="detail-price-fake" class="text-sm text-wa-gray line-through"></span>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="space-y-3">
+                <h3 class="text-sm font-medium text-wa-gray uppercase tracking-wide">Deskripsi Item</h3>
+                <p id="detail-desc" class="text-sm text-wa-light leading-relaxed whitespace-pre-line"></p>
+            </div>
+
+            <!-- Variants Chips -->
+            <div class="mt-6 pt-4 border-t border-wa-divider">
+                <h3 class="text-sm font-medium text-wa-gray uppercase tracking-wide mb-3">Fitur Paket</h3>
+                <div id="detail-variants" class="flex flex-wrap gap-2">
+                    <!-- Chips inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Sticky Footer Action -->
+        <div class="fixed bottom-0 w-full bg-wa-header border-t border-wa-divider p-3 z-50">
+            <div class="max-w-md mx-auto flex gap-3">
+                <a id="detail-link-preview" href="#" target="_blank" class="flex-1 border border-wa-divider text-wa-teal font-medium py-3 rounded-full text-center text-sm hover:bg-[#2a373f] transition">
+                    Lihat Demo
+                </a>
+                <button onclick="kirimPesanWA()" class="flex-[2] bg-wa-teal text-white font-medium py-3 rounded-full shadow-lg text-sm flex justify-center items-center gap-2 hover:bg-[#008f6f] transition">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.017-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                    Order via WA
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- SCRIPT LOGIC -->
     <script>
+        // CONFIG FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyDq6LjlUFRDm5CqGSqVLiJ9gItIyw71bAU",
             authDomain: "db-katalog.firebaseapp.com",
@@ -135,190 +202,238 @@
             messagingSenderId: "597535674259",
             appId: "1:597535674259:web:0577885c617f623bb82266"
         };
-
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // VAR GLOBAL
         let allProducts = [];
-        let currentCategory = 'Semua';
-
-        // URL ImageKit Kamu
+        let groupedProducts = {};
         const IMAGEKIT_BASE = "https://ik.imagekit.io/undangandigital";
+        // Definisi urutan Tier
+        const TIER_ORDER = ["Starter", "Bronze", "Silver", "Gold", "Platinum", "Diamond"];
 
+        // FUNGSI NAVIGASI HALAMAN (ROUTER SEDERHANA)
+        let navigationStack = ['view-home'];
+
+        function showView(viewId) {
+            // Sembunyikan semua view
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.remove('view-active');
+            });
+            // Tampilkan view target
+            document.getElementById(viewId).classList.add('view-active');
+            window.scrollTo(0,0);
+        }
+
+        function goHome() {
+            navigationStack = ['view-home'];
+            showView('view-home');
+        }
+
+        function goBack() {
+            if (navigationStack.length > 1) {
+                navigationStack.pop(); // Buang view sekarang
+                const prevView = navigationStack[navigationStack.length - 1];
+                
+                // Khusus jika balik ke kategori, kita perlu tau kategori apa
+                // Tapi untuk simpelnya, sistem stack ini mengandalkan ID view
+                // Jika user dari Detail -> Kategori, view ID nya 'view-category'
+                // Karena konten view-category masih static (terakhir dirender), aman.
+                showView(prevView);
+            } else {
+                goHome();
+            }
+        }
+
+        // LOAD DATA
         async function loadData() {
-            const statusText = document.getElementById('status-text');
-            const loading = document.getElementById('loading-skeleton');
-            const errorArea = document.getElementById('error-area');
-            const grid = document.getElementById('product-grid');
-
-            console.log("🚀 Memulai pengambilan data...");
-
             try {
                 const snapshot = await db.collection('themes').get();
                 
                 if (snapshot.empty) {
-                    statusText.innerText = "Data Kosong";
-                    loading.style.display = 'none';
-                    errorArea.style.display = 'block';
-                    document.getElementById('error-msg').innerText = "Database terhubung tapi tidak ada isinya.";
-                    return;
+                    alert("Data kosong!"); return;
                 }
 
                 allProducts = snapshot.docs.map(doc => {
-                    let data = doc.data();
+                    let d = doc.data();
                     return {
                         id: doc.id,
-                        title: data.title || data['title '] || 'Tanpa Judul',
-                        category: data.category || 'Umum',
-                        price_real: data.price_real || data['price-real'] || 0,
-                        price_fake: data.price_fake || data['price-fake'] || 0,
-                        description: data.description || '',
-                        folder_id: data.folder_id || doc.id, // ID Folder untuk ImageKit
-                        tier: data.tier || 'Standard',
-                        link: data.link || '#'
+                        title: d.title || d['title '] || 'Tanpa Judul',
+                        category: d.category || 'Umum',
+                        price_real: d.price_real || d['price-real'] || 0,
+                        price_fake: d.price_fake || d['price-fake'] || 0,
+                        description: d.description || '',
+                        folder_id: d.folder_id || doc.id,
+                        tier: d.tier || 'Starter',
+                        variants: d.variants || [],
+                        link: d.link || '#'
                     };
                 });
 
-                console.log(`✅ ${allProducts.length} data berhasil dimuat!`);
-                statusText.innerText = `Online • ${allProducts.length} Tema`;
-                statusText.className = "text-[10px] font-medium text-green-600";
-                loading.style.display = 'none';
-                renderProducts(allProducts);
+                // Group by Tier
+                groupedProducts = {};
+                allProducts.forEach(p => {
+                    const tier = p.tier;
+                    if(!groupedProducts[tier]) groupedProducts[tier] = [];
+                    groupedProducts[tier].push(p);
+                });
+
+                document.getElementById('home-loading').style.display = 'none';
+                renderHome();
 
             } catch (error) {
-                console.error("❌ Error:", error);
-                statusText.innerText = "Error Koneksi";
-                loading.style.display = 'none';
-                errorArea.style.display = 'block';
-                document.getElementById('error-msg').innerText = error.message;
+                console.error("Error:", error);
+                alert("Gagal memuat data: " + error.message);
             }
         }
 
-        function renderProducts(items) {
-            const grid = document.getElementById('product-grid');
-            grid.innerHTML = '';
+        // RENDER HALAMAN UTAMA (TIER LIST)
+        function renderHome() {
+            const container = document.getElementById('tier-list-container');
+            container.innerHTML = '';
 
-            if (items.length === 0) {
-                grid.innerHTML = '<div class="col-span-2 text-center text-slate-400 py-10 text-sm">Tidak ada tema ditemukan</div>';
-                return;
-            }
+            // Loop sesuai urutan tier yg diinginkan
+            TIER_ORDER.forEach(tier => {
+                const products = groupedProducts[tier];
+                if (!products || products.length === 0) return;
 
-            items.forEach(item => {
-                let discount = 0;
-                if(item.price_fake > item.price_real) {
-                    discount = Math.round(((item.price_fake - item.price_real) / item.price_fake) * 100);
-                }
+                // Ambil 3 produk saja untuk preview
+                const previewProducts = products.slice(0, 3);
 
-                const priceDisplay = 'Rp' + Math.floor(item.price_real / 1000) + 'k';
-                const fakeDisplay = 'Rp' + Math.floor(item.price_fake / 1000) + 'k';
+                // Buat Section HTML
+                const section = document.createElement('div');
+                section.className = "bg-wa-header mb-2 py-4 shadow-sm"; // Card style container per tier
+                
+                let cardsHtml = '';
+                previewProducts.forEach(item => {
+                    const imgUrl = `${IMAGEKIT_BASE}/${item.folder_id}/01.png?tr=w-300`;
+                    const price = 'Rp' + Math.floor(item.price_real / 1000) + 'k';
+                    
+                    cardsHtml += `
+                        <div onclick='openDetail(${JSON.stringify(item).replace(/'/g, "&#39;")})' class="cursor-pointer active:opacity-75 transition">
+                            <div class="aspect-square rounded-lg overflow-hidden bg-wa-bg mb-2 border border-wa-divider/30">
+                                <img src="${imgUrl}" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://placehold.co/300?text=No+Img'">
+                            </div>
+                            <h4 class="text-xs text-wa-light font-medium truncate">${item.title}</h4>
+                            <span class="text-xs text-wa-teal font-bold">${price}</span>
+                        </div>
+                    `;
+                });
 
-                // LOGIKA IMAGEKIT (THUMBNAIL)
-                // Panggil 01.png, resize lebar 400px
-                const imgUrl = `${IMAGEKIT_BASE}/${item.folder_id}/01.png?tr=w-400`;
-
-                const card = document.createElement('div');
-                card.className = "bg-white p-2.5 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-slate-100 active:scale-95 transition-transform cursor-pointer hover:border-blue-200 relative group";
-                card.onclick = () => openModal(item);
-
-                card.innerHTML = `
-                    <div class="relative overflow-hidden rounded-lg bg-slate-100 aspect-[3/4] mb-2">
-                        <img src="${imgUrl}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" onerror="this.src='https://placehold.co/400x600/f1f5f9/94a3b8?text=Img+Error'">
-                        ${discount > 0 ? `<div class="absolute top-1.5 left-1.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">-${discount}%</div>` : ''}
+                section.innerHTML = `
+                    <div class="px-4 flex justify-between items-center mb-3">
+                        <h2 class="text-wa-light font-medium text-sm">Paket ${tier}</h2>
+                        <button onclick="openCategory('${tier}')" class="text-wa-gray text-xs font-medium hover:text-wa-teal">Lihat Semua ></button>
                     </div>
-                    <h3 class="text-xs font-bold text-slate-800 truncate leading-tight">${item.title}</h3>
-                    <div class="flex items-end gap-1.5 mt-1.5">
-                        <p class="text-sm font-bold text-blue-600">${priceDisplay}</p>
-                        <p class="text-[10px] text-slate-400 line-through mb-0.5">${fakeDisplay}</p>
-                    </div>
-                    <div class="mt-2 flex gap-1">
-                        <span class="text-[9px] px-1.5 py-0.5 bg-slate-50 text-slate-500 rounded border border-slate-100 uppercase tracking-wide">${item.tier}</span>
+                    <div class="px-4 grid grid-cols-3 gap-3">
+                        ${cardsHtml}
                     </div>
                 `;
-                grid.appendChild(card);
+
+                container.appendChild(section);
             });
         }
 
-        function filterProducts() {
-            const query = document.getElementById('search-input').value.toLowerCase();
-            const filtered = allProducts.filter(item => {
-                const catMatch = currentCategory === 'Semua' ? true : 
-                                item.category.toLowerCase().includes(currentCategory.toLowerCase());
-                const searchMatch = item.title.toLowerCase().includes(query);
-                return catMatch && searchMatch;
-            });
-            renderProducts(filtered);
-        }
+        // RENDER HALAMAN KATEGORI FULL (VIEW 3)
+        function openCategory(tierName) {
+            const products = groupedProducts[tierName];
+            if(!products) return;
 
-        function setCategory(cat) {
-            currentCategory = cat;
-            const buttons = document.querySelectorAll('.cat-btn');
-            buttons.forEach(btn => {
-                if(btn.innerText === cat) {
-                    btn.classList.remove('inactive-tab');
-                    btn.classList.add('active-tab');
-                } else {
-                    btn.classList.add('inactive-tab');
-                    btn.classList.remove('active-tab');
-                }
-            });
-            filterProducts();
-        }
-
-        function openModal(item) {
-            const modal = document.getElementById('detail-modal');
-            const slider = document.getElementById('modal-slider');
+            document.getElementById('cat-header-title').innerText = `Paket ${tierName}`;
             
-            // Isi Teks
-            document.getElementById('modal-title').innerText = item.title;
-            document.getElementById('modal-category').innerText = item.category;
-            document.getElementById('modal-price-real').innerText = 'Rp ' + item.price_real.toLocaleString('id-ID');
-            document.getElementById('modal-price-fake').innerText = 'Rp ' + item.price_fake.toLocaleString('id-ID');
-            document.getElementById('modal-desc').innerText = item.description;
-            document.getElementById('modal-link').href = item.link;
+            const container = document.getElementById('cat-grid-container');
+            container.innerHTML = '';
 
-            // --- ISI SLIDER GAMBAR (LOGIKA 10 SLIDE) ---
-            slider.innerHTML = ''; // Kosongkan dulu
-            
-            for (let i = 1; i <= 10; i++) {
-                // Pad number: 1 -> "01", 10 -> "10"
-                const num = String(i).padStart(2, '0');
-                let imgUrl;
+            products.forEach(item => {
+                const imgUrl = `${IMAGEKIT_BASE}/${item.folder_id}/01.png?tr=w-400`;
+                const price = 'Rp' + Math.floor(item.price_real / 1000) + 'k';
 
-                if (i <= 8) {
-                    // Slide 1-8: Ambil dari folder tema
-                    imgUrl = `${IMAGEKIT_BASE}/${item.folder_id}/${num}.png`;
-                } else {
-                    // Slide 9-10: Ambil dari folder feature-service (Statis)
-                    imgUrl = `${IMAGEKIT_BASE}/feature-service/${num}.png`;
-                }
-
-                // Optimasi: Resize lebar 800px untuk detail
-                imgUrl += "?tr=w-800";
-
-                // Buat elemen Slide
-                const slide = document.createElement('div');
-                slide.className = 'w-full h-full flex-shrink-0 snap-center relative';
-                // Lazy loading untuk gambar slide ke-2 dst agar hemat data
-                const loadingAttr = i === 1 ? 'eager' : 'lazy';
-                slide.innerHTML = `<img src="${imgUrl}" class="w-full h-full object-cover" loading="${loadingAttr}" onerror="this.src='https://placehold.co/400x800/f1f5f9/94a3b8?text=Slide+Missing'">`;
+                const card = document.createElement('div');
+                card.className = "bg-wa-header p-2 rounded-lg border border-wa-divider active:scale-[0.98] transition cursor-pointer";
+                card.onclick = () => openDetail(item);
                 
-                slider.appendChild(slide);
+                card.innerHTML = `
+                    <div class="aspect-square rounded overflow-hidden bg-wa-bg mb-2">
+                        <img src="${imgUrl}" class="w-full h-full object-cover" loading="lazy">
+                    </div>
+                    <h3 class="text-sm font-medium text-wa-light truncate">${item.title}</h3>
+                    <p class="text-sm font-bold text-wa-teal mt-1">${price}</p>
+                `;
+                container.appendChild(card);
+            });
+
+            // Navigasi
+            showView('view-category');
+            navigationStack.push('view-category');
+        }
+
+        // RENDER HALAMAN DETAIL (VIEW 4)
+        function openDetail(item) {
+            // Set Text
+            document.getElementById('detail-title').innerText = item.title;
+            document.getElementById('detail-price-real').innerText = 'Rp ' + item.price_real.toLocaleString('id-ID');
+            document.getElementById('detail-price-fake').innerText = 'Rp ' + item.price_fake.toLocaleString('id-ID');
+            document.getElementById('detail-desc').innerText = item.description;
+            document.getElementById('detail-link-preview').href = item.link;
+
+            // Set Variants
+            const variantContainer = document.getElementById('detail-variants');
+            variantContainer.innerHTML = '';
+            if(item.variants && item.variants.length > 0) {
+                item.variants.forEach(v => {
+                    variantContainer.innerHTML += `<span class="text-xs bg-wa-bg border border-wa-divider text-wa-gray px-3 py-1 rounded-full capitalize">${v}</span>`;
+                });
+            } else {
+                variantContainer.innerHTML = '<span class="text-xs text-wa-gray italic">Tidak ada info fitur khusus</span>';
             }
 
-            // Tampilkan Modal
-            modal.classList.remove('hidden');
-            setTimeout(() => { modal.classList.remove('translate-y-full'); }, 10);
-            document.body.style.overflow = 'hidden';
+            // --- RENDER IMAGE SLIDER (PEEKING LOGIC) ---
+            const slider = document.getElementById('detail-slider');
+            slider.innerHTML = '';
+
+            for (let i = 1; i <= 10; i++) {
+                const num = String(i).padStart(2, '0');
+                let imgUrl;
+                if (i <= 8) imgUrl = `${IMAGEKIT_BASE}/${item.folder_id}/${num}.png`;
+                else imgUrl = `${IMAGEKIT_BASE}/feature-service/${num}.png`;
+
+                imgUrl += "?tr=w-800"; // Optimasi
+
+                // TRICK PEEKING:
+                // Container Slider Full Width 1:1.
+                // Item didalamnya kita set width 85% (w-[85%]).
+                // Sisanya (15%) akan menampilkan potongan gambar berikutnya.
+                // aspect-[4/5] menjaga rasio gambar asli agar tidak gepeng, object-cover memotongnya agar rapi di dalam kotak.
+                
+                const slideItem = document.createElement('div');
+                slideItem.className = "snap-center shrink-0 w-[85%] h-full flex items-center justify-center bg-wa-bg rounded-lg overflow-hidden relative";
+                
+                slideItem.innerHTML = `
+                    <img src="${imgUrl}" class="w-full h-full object-cover" loading="${i===1?'eager':'lazy'}" onerror="this.src='https://placehold.co/400x500/333?text=Slide+Error'">
+                `;
+                slider.appendChild(slideItem);
+            }
+
+            // Reset Slider Position
+            slider.scrollLeft = 0;
+
+            // Simpan data item ini di window object untuk fungsi WA
+            window.currentItem = item;
+
+            showView('view-detail');
+            navigationStack.push('view-detail');
         }
 
-        function closeModal() {
-            const modal = document.getElementById('detail-modal');
-            modal.classList.add('translate-y-full');
-            setTimeout(() => { modal.classList.add('hidden'); }, 300);
-            document.body.style.overflow = 'auto';
+        function kirimPesanWA() {
+            if(!window.currentItem) return;
+            const item = window.currentItem;
+            const text = `Halo Admin, saya tertarik dengan tema undangan *${item.title}* (Paket ${item.tier}) seharga Rp ${item.price_real.toLocaleString('id-ID')}. Info lebih lanjut?`;
+            const url = `https://wa.me/6281234567890?text=${encodeURIComponent(text)}`; // GANTI NO WA DISINI
+            window.open(url, '_blank');
         }
 
         window.onload = loadData;
+
     </script>
 </body>
 </html>
