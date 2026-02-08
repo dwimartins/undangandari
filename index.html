@@ -8,7 +8,7 @@
     <!-- 1. TAILWIND CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 2. FIREBASE COMPAT (Versi Global - Lebih Stabil untuk kasus ini) -->
+    <!-- 2. FIREBASE COMPAT -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
@@ -20,6 +20,9 @@
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         .active-tab { background-color: #0f172a; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .inactive-tab { background-color: white; color: #475569; border: 1px solid #e2e8f0; }
+        /* Smooth Scroll untuk Slider */
+        .snap-x { scroll-snap-type: x mandatory; }
+        .snap-center { scroll-snap-align: center; }
     </style>
 </head>
 
@@ -45,7 +48,6 @@
 
         <!-- Kategori Tabs -->
         <div class="flex overflow-x-auto gap-2 px-4 pb-3 hide-scroll max-w-md mx-auto mt-1" id="category-container">
-            <!-- Tabs di-render via JS -->
             <button onclick="setCategory('Semua')" class="cat-btn active-tab px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all active:scale-95">Semua</button>
             <button onclick="setCategory('Wedding')" class="cat-btn inactive-tab px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all active:scale-95">Wedding</button>
             <button onclick="setCategory('Khitan')" class="cat-btn inactive-tab px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all active:scale-95">Khitan</button>
@@ -71,7 +73,7 @@
         </div>
     </div>
 
-    <!-- GRID PRODUK UTAMA (Container Kosong untuk diisi JS) -->
+    <!-- GRID PRODUK UTAMA -->
     <div id="product-grid" class="px-3 grid grid-cols-2 gap-3 max-w-md mx-auto pb-10">
         <!-- Produk akan muncul disini -->
     </div>
@@ -79,19 +81,24 @@
     <!-- MODAL DETAIL -->
     <div id="detail-modal" class="fixed inset-0 bg-white z-50 overflow-y-auto hidden flex-col transition-transform duration-300 translate-y-full">
         
-        <!-- Tombol Close & Nav -->
+        <!-- Navbar Modal -->
         <div class="absolute top-0 w-full p-4 flex justify-between items-center z-10 pointer-events-none">
             <button onclick="closeModal()" class="bg-black/30 backdrop-blur text-white p-2 rounded-full pointer-events-auto hover:bg-black/50">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
             </button>
         </div>
 
-        <!-- Gambar -->
-        <div class="h-[60vh] bg-slate-200 relative shrink-0">
-             <img id="modal-img" src="" class="w-full h-full object-cover">
+        <!-- Slider Gambar (Horizontal Scroll) -->
+        <div id="modal-slider" class="h-[60vh] bg-slate-200 relative shrink-0 overflow-x-auto flex snap-x snap-mandatory hide-scroll">
+             <!-- Slide gambar akan di-inject via JS -->
         </div>
         
-        <!-- Konten -->
+        <!-- Badge Indikator Geser -->
+        <div class="absolute top-[55vh] right-4 z-10">
+            <span class="bg-black/50 backdrop-blur text-white text-[10px] px-2 py-1 rounded-full">Geser 👉</span>
+        </div>
+
+        <!-- Konten Detail -->
         <div class="flex-1 p-6 -mt-8 bg-white rounded-t-[2rem] relative shadow-[0_-5px_20px_rgba(0,0,0,0.1)] z-0">
             <div class="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6"></div>
             
@@ -112,15 +119,14 @@
         </div>
 
         <!-- Footer Modal -->
-        <div class="fixed bottom-0 w-full bg-white border-t border-slate-100 p-4 flex gap-3 z-50">
-            <a id="modal-link" href="#" target="_blank" class="flex-1 bg-slate-50 text-slate-700 font-bold py-3.5 rounded-xl text-center text-sm border border-slate-200 flex items-center justify-center gap-2">Preview</a>
+        <div class="fixed bottom-0 w-full bg-white border-t border-slate-100 p-4 flex gap-3 z-50 safe-area-bottom">
+            <a id="modal-link" href="#" target="_blank" class="flex-1 bg-slate-50 text-slate-700 font-bold py-3.5 rounded-xl text-center text-sm border border-slate-200 flex items-center justify-center gap-2">Live Preview</a>
             <button class="flex-[2] bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-slate-300 text-sm">Pesan Sekarang</button>
         </div>
     </div>
 
-    <!-- SCRIPT UTAMA (VANILLA JS + FIREBASE COMPAT) -->
+    <!-- SCRIPT UTAMA -->
     <script>
-        // 1. KONFIGURASI FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyDq6LjlUFRDm5CqGSqVLiJ9gItIyw71bAU",
             authDomain: "db-katalog.firebaseapp.com",
@@ -130,15 +136,15 @@
             appId: "1:597535674259:web:0577885c617f623bb82266"
         };
 
-        // Inisialisasi Global
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Variabel Global
         let allProducts = [];
         let currentCategory = 'Semua';
 
-        // 2. FUNGSI FETCH DATA (JANTUNG APLIKASI)
+        // URL ImageKit Kamu
+        const IMAGEKIT_BASE = "https://ik.imagekit.io/undangandigital";
+
         async function loadData() {
             const statusText = document.getElementById('status-text');
             const loading = document.getElementById('loading-skeleton');
@@ -148,7 +154,6 @@
             console.log("🚀 Memulai pengambilan data...");
 
             try {
-                // Ambil semua dokumen dari collection 'themes'
                 const snapshot = await db.collection('themes').get();
                 
                 if (snapshot.empty) {
@@ -159,31 +164,25 @@
                     return;
                 }
 
-                // Proses Data (Cleaning)
                 allProducts = snapshot.docs.map(doc => {
                     let data = doc.data();
                     return {
                         id: doc.id,
-                        // AUTO FIX LOGIC: Deteksi kolom yg salah nama
                         title: data.title || data['title '] || 'Tanpa Judul',
                         category: data.category || 'Umum',
                         price_real: data.price_real || data['price-real'] || 0,
                         price_fake: data.price_fake || data['price-fake'] || 0,
                         description: data.description || '',
-                        folder_id: data.folder_id || doc.id,
+                        folder_id: data.folder_id || doc.id, // ID Folder untuk ImageKit
                         tier: data.tier || 'Standard',
                         link: data.link || '#'
                     };
                 });
 
                 console.log(`✅ ${allProducts.length} data berhasil dimuat!`);
-                
-                // Update UI
                 statusText.innerText = `Online • ${allProducts.length} Tema`;
                 statusText.className = "text-[10px] font-medium text-green-600";
                 loading.style.display = 'none';
-                
-                // Render Awal
                 renderProducts(allProducts);
 
             } catch (error) {
@@ -195,10 +194,9 @@
             }
         }
 
-        // 3. FUNGSI RENDER (MENAMPILKAN KE LAYAR)
         function renderProducts(items) {
             const grid = document.getElementById('product-grid');
-            grid.innerHTML = ''; // Bersihkan grid
+            grid.innerHTML = '';
 
             if (items.length === 0) {
                 grid.innerHTML = '<div class="col-span-2 text-center text-slate-400 py-10 text-sm">Tidak ada tema ditemukan</div>';
@@ -206,27 +204,25 @@
             }
 
             items.forEach(item => {
-                // Hitung Diskon
                 let discount = 0;
                 if(item.price_fake > item.price_real) {
                     discount = Math.round(((item.price_fake - item.price_real) / item.price_fake) * 100);
                 }
 
-                // Format Harga
                 const priceDisplay = 'Rp' + Math.floor(item.price_real / 1000) + 'k';
                 const fakeDisplay = 'Rp' + Math.floor(item.price_fake / 1000) + 'k';
 
-                // URL Gambar (Placeholder dulu)
-                const imgUrl = `https://placehold.co/400x600/f8fafc/64748b?text=${encodeURIComponent(item.title)}`;
+                // LOGIKA IMAGEKIT (THUMBNAIL)
+                // Panggil 01.png, resize lebar 400px
+                const imgUrl = `${IMAGEKIT_BASE}/${item.folder_id}/01.png?tr=w-400`;
 
-                // Buat Elemen HTML
                 const card = document.createElement('div');
                 card.className = "bg-white p-2.5 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-slate-100 active:scale-95 transition-transform cursor-pointer hover:border-blue-200 relative group";
-                card.onclick = () => openModal(item); // Event Click
+                card.onclick = () => openModal(item);
 
                 card.innerHTML = `
                     <div class="relative overflow-hidden rounded-lg bg-slate-100 aspect-[3/4] mb-2">
-                        <img src="${imgUrl}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy">
+                        <img src="${imgUrl}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" onerror="this.src='https://placehold.co/400x600/f1f5f9/94a3b8?text=Img+Error'">
                         ${discount > 0 ? `<div class="absolute top-1.5 left-1.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">-${discount}%</div>` : ''}
                     </div>
                     <h3 class="text-xs font-bold text-slate-800 truncate leading-tight">${item.title}</h3>
@@ -242,28 +238,19 @@
             });
         }
 
-        // 4. FUNGSI FILTER & SEARCH
         function filterProducts() {
             const query = document.getElementById('search-input').value.toLowerCase();
-            
             const filtered = allProducts.filter(item => {
-                // Filter Kategori
                 const catMatch = currentCategory === 'Semua' ? true : 
                                 item.category.toLowerCase().includes(currentCategory.toLowerCase());
-                
-                // Filter Search
                 const searchMatch = item.title.toLowerCase().includes(query);
-                
                 return catMatch && searchMatch;
             });
-
             renderProducts(filtered);
         }
 
         function setCategory(cat) {
             currentCategory = cat;
-            
-            // Update Tampilan Tombol Tab
             const buttons = document.querySelectorAll('.cat-btn');
             buttons.forEach(btn => {
                 if(btn.innerText === cat) {
@@ -274,16 +261,14 @@
                     btn.classList.remove('active-tab');
                 }
             });
-
-            filterProducts(); // Re-render
+            filterProducts();
         }
 
-        // 5. MODAL LOGIC (Tanpa Alpine)
         function openModal(item) {
             const modal = document.getElementById('detail-modal');
+            const slider = document.getElementById('modal-slider');
             
-            // Isi Data Modal
-            document.getElementById('modal-img').src = `https://placehold.co/400x600/f8fafc/64748b?text=${encodeURIComponent(item.title)}`;
+            // Isi Teks
             document.getElementById('modal-title').innerText = item.title;
             document.getElementById('modal-category').innerText = item.category;
             document.getElementById('modal-price-real').innerText = 'Rp ' + item.price_real.toLocaleString('id-ID');
@@ -291,30 +276,49 @@
             document.getElementById('modal-desc').innerText = item.description;
             document.getElementById('modal-link').href = item.link;
 
-            // Tampilkan Modal (Animasi Slide Up)
-            modal.classList.remove('hidden');
-            // Sedikit delay biar transisi CSS jalan
-            setTimeout(() => {
-                modal.classList.remove('translate-y-full');
-            }, 10);
+            // --- ISI SLIDER GAMBAR (LOGIKA 10 SLIDE) ---
+            slider.innerHTML = ''; // Kosongkan dulu
             
-            document.body.style.overflow = 'hidden'; // Matikan scroll body
+            for (let i = 1; i <= 10; i++) {
+                // Pad number: 1 -> "01", 10 -> "10"
+                const num = String(i).padStart(2, '0');
+                let imgUrl;
+
+                if (i <= 8) {
+                    // Slide 1-8: Ambil dari folder tema
+                    imgUrl = `${IMAGEKIT_BASE}/${item.folder_id}/${num}.png`;
+                } else {
+                    // Slide 9-10: Ambil dari folder feature-service (Statis)
+                    imgUrl = `${IMAGEKIT_BASE}/feature-service/${num}.png`;
+                }
+
+                // Optimasi: Resize lebar 800px untuk detail
+                imgUrl += "?tr=w-800";
+
+                // Buat elemen Slide
+                const slide = document.createElement('div');
+                slide.className = 'w-full h-full flex-shrink-0 snap-center relative';
+                // Lazy loading untuk gambar slide ke-2 dst agar hemat data
+                const loadingAttr = i === 1 ? 'eager' : 'lazy';
+                slide.innerHTML = `<img src="${imgUrl}" class="w-full h-full object-cover" loading="${loadingAttr}" onerror="this.src='https://placehold.co/400x800/f1f5f9/94a3b8?text=Slide+Missing'">`;
+                
+                slider.appendChild(slide);
+            }
+
+            // Tampilkan Modal
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('translate-y-full'); }, 10);
+            document.body.style.overflow = 'hidden';
         }
 
         function closeModal() {
             const modal = document.getElementById('detail-modal');
             modal.classList.add('translate-y-full');
-            
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300); // Tunggu durasi transisi CSS
-            
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
             document.body.style.overflow = 'auto';
         }
 
-        // JALANKAN SAAT LOAD
         window.onload = loadData;
-
     </script>
 </body>
 </html>
