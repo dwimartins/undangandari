@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Upload Katalog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-200 font-sans min-h-screen p-8">
+
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-3xl font-bold text-blue-500 mb-2">⚡ Admin Katalog Uploader</h1>
+        <p class="text-slate-400 mb-8">Upload file CSV katalog terbaru untuk update database Firebase.</p>
+
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
+            <label class="block mb-2 text-sm font-medium text-slate-300">Pilih File CSV (dari Excel)</label>
+            <input type="file" id="csvFile" accept=".csv" class="block w-full text-sm text-slate-300
+              file:mr-4 file:py-2 file:px-4
+              file:rounded-full file:border-0
+              file:text-sm file:font-semibold
+              file:bg-blue-600 file:text-white
+              hover:file:bg-blue-700 cursor-pointer mb-4
+            "/>
+            
+            <button onclick="processUpload()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition flex justify-center items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                UPLOAD KE DATABASE
+            </button>
+        </div>
+
+        <div class="mt-8">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">System Log</h3>
+            <div id="logArea" class="bg-black text-green-400 p-4 rounded-lg font-mono text-xs h-64 overflow-y-auto border border-slate-700 shadow-inner">
+                <p>> Menunggu file...</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+        // CONFIG USER (SUDAH SAYA MASUKKAN)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDq6LjlUFRDm5CqGSqVLiJ9gItIyw71bAU",
+            authDomain: "db-katalog.firebaseapp.com",
+            projectId: "db-katalog",
+            storageBucket: "db-katalog.firebasestorage.app",
+            messagingSenderId: "597535674259",
+            appId: "1:597535674259:web:0577885c617f623bb82266"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Expose function ke window agar bisa dipanggil tombol HTML
+        window.processUpload = function() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                log("❌ ERROR: Pilih file CSV dulu bos!", "text-red-500");
+                return;
+            }
+
+            log(`> Membaca file: ${file.name}...`);
+
+            // Parse CSV pakai library PapaParse
+            Papa.parse(file, {
+                header: true, // Baris pertama dianggap header
+                skipEmptyLines: true,
+                complete: async function(results) {
+                    const dataMentah = results.data;
+                    log(`> Ditemukan ${dataMentah.length} baris data.`);
+                    log(`> Memulai proses upload ke Firebase...`);
+                    
+                    await uploadToFirebase(dataMentah);
+                },
+                error: function(error) {
+                    log(`❌ Error parsing CSV: ${error.message}`, "text-red-500");
+                }
+            });
+        };
+
+        async function uploadToFirebase(dataList) {
+            let successCount = 0;
+            let errorCount = 0;
+
+            // Kita pakai Batch (rombongan) biar ngebut dan hemat koneksi
+            // Firebase limit batch maks 500 per request. Jadi kita chunk.
+            const batchSize = 400; 
+            
+            for (let i = 0; i < dataList.length; i += batchSize) {
+                const batch = writeBatch(db);
+                const chunk = dataList.slice(i, i + batchSize);
+
+                chunk.forEach((row) => {
+                    // 1. Validasi ID
+                    if (!row.id || row.id.trim() === "") return;
+
+                    // 2. Bersihkan Data (Format Cleaning)
+                    // Convert harga ke angka (hilangkan 'Rp' atau titik jika ada)
+                    const cleanPriceReal = parseInt(String(row['price-real']).replace(/[^0-9]/g, '')) || 0;
+                    const cleanPriceFake = parseInt(String(row['price-fake']).replace(/[^0-9]/g, '')) || 0;
+                    
+                    // Convert variants string "foto, animasi" -> Array ["foto", "animasi"]
+                    let variantsArray = [];
+                    if (row.variants) {
+                        variantsArray = row.variants.split(',').map(item => item.trim());
+                    }
+
+                    // Siapkan object bersih
+                    const docRef = doc(db, "themes", row.id);
+                    const cleanData = {
+                        id: row.id,
+                        title: row.title || row['title '], // handle typo spasi di csv
+                        category: row.category,
+                        tier: row.tier,
+                        price_real: cleanPriceReal,
+                        price_fake: cleanPriceFake,
+                        link: row.link,
+                        description: row.description,
+                        variants: variantsArray,
+                        folder_id: row.folder_id,
+                        updated_at: new Date() // Timestamp update
+                    };
+
+                    batch.set(docRef, cleanData);
+                });
+
+                try {
+                    await batch.commit();
+                    successCount += chunk.length;
+                    log(`✅ Batch ${Math.floor(i/batchSize) + 1} sukses! (${successCount} data terupload)`);
+                } catch (e) {
+                    errorCount += chunk.length;
+                    log(`❌ Gagal upload batch: ${e.message}`, "text-red-500");
+                }
+            }
+
+            log(`🎉 SELESAI! Sukses: ${successCount}, Gagal: ${errorCount}`);
+            if(successCount > 0) alert("Sukses update database!");
+        }
+
+        // Helper Log
+        function log(message, color = "text-green-400") {
+            const logArea = document.getElementById('logArea');
+            const p = document.createElement('p');
+            p.className = `${color} mb-1`;
+            p.innerText = message;
+            logArea.appendChild(p);
+            logArea.scrollTop = logArea.scrollHeight; // Auto scroll ke bawah
+        }
+    </script>
+</body>
+</html>
