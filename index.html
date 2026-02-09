@@ -178,9 +178,9 @@
         </div>
 
         <!-- Image Slider (Horizontal Thumbnail) -->
-        <!-- REVISI 2: Tambah ID 'detail-slider-container' untuk manipulasi rasio via JS -->
+        <!-- REVISI 1: touch-pan-y ditambahkan ke class untuk fix scroll -->
         <div class="max-w-md mx-auto relative bg-black group">
-            <div id="detail-slider-container" class="w-full aspect-square relative overflow-hidden transition-all duration-300">
+            <div class="w-full aspect-square relative overflow-hidden">
                 <div id="detail-slider" class="flex overflow-x-auto snap-x snap-mandatory hide-scroll h-full items-center px-4 gap-3 smooth-scroll touch-pan-y"></div>
                 
                 <!-- Hint Overlay -->
@@ -321,23 +321,18 @@
         let groupedProducts = {};
         const IMAGEKIT_BASE = "https://ik.imagekit.io/undangandigital";
         
-        // REVISI: URUTAN TIER SESUAI REQUEST (Standard -> Adat)
-        const TIER_ORDER = [
-            "Starter", "Bronze", "Silver", "Gold", "Platinum", "Diamond", 
-            "Tema Adat Jawa", "Tema Adat Bugis", "Tema Adat Batak", 
-            "Tema Adat Karo", "Tema Adat Nias", "Tema Adat Minang", 
-            "Tema Adat Sunda", "Tema Adat Bali", "Tema Adat Palembang"
-        ];
+        // Ensure New Tiers appear
+        const TIER_ORDER = ["Starter", "Bronze", "Silver", "Gold", "Platinum", "Diamond", "Tema Adat Batak", "Tema Adat Karo"];
         
         const TIER_CONFIG = { 
-            "Starter": "🟢", "Bronze": "🟤", "Silver": "⚪", 
-            "Gold": "🟡", "Platinum": "🔵", "Diamond": "💎",
-            // Default warna merah untuk semua adat
-            "Tema Adat Jawa": "🔴", "Tema Adat Bugis": "🔴", 
-            "Tema Adat Batak": "🔴", "Tema Adat Karo": "🔴", 
-            "Tema Adat Nias": "🔴", "Tema Adat Minang": "🔴",
-            "Tema Adat Sunda": "🔴", "Tema Adat Bali": "🔴",
-            "Tema Adat Palembang": "🔴"
+            "Starter": "🟢", 
+            "Bronze": "🟤", 
+            "Silver": "⚪", 
+            "Gold": "🟡", 
+            "Platinum": "🔵", 
+            "Diamond": "💎",
+            "Tema Adat Batak": "🔴",
+            "Tema Adat Karo": "🔴"
         };
 
         // DATA FITUR LENGKAP
@@ -472,25 +467,9 @@
             const container = document.getElementById('tier-list-container');
             container.innerHTML = '';
 
-            // REVISI LOGIKA URUTAN:
-            // 1. Ambil semua tier unik dari produk yang ada, berdasarkan urutan kemunculan di database (fetch order)
-            const dbTiers = [];
-            allProducts.forEach(p => {
-                if (!dbTiers.includes(p.tier)) {
-                    dbTiers.push(p.tier);
-                }
-            });
-
-            // 2. Pisahkan tier yang ada di TIER_ORDER (Prioritas) dan yang tidak (Extra)
-            // Tier Prioritas diurutkan sesuai index TIER_ORDER
-            const priorityTiers = dbTiers.filter(t => TIER_ORDER.includes(t))
-                                         .sort((a, b) => TIER_ORDER.indexOf(a) - TIER_ORDER.indexOf(b));
-            
-            // Tier Extra dibiarkan sesuai urutan kemunculan di DB (dbTiers)
+            const dbTiers = Object.keys(groupedProducts);
             const extraTiers = dbTiers.filter(t => !TIER_ORDER.includes(t));
-
-            // 3. Gabungkan: Prioritas dulu, baru Extra
-            const finalTierList = [...priorityTiers, ...extraTiers];
+            const finalTierList = [...TIER_ORDER, ...extraTiers];
 
             finalTierList.forEach(tier => {
                 const products = groupedProducts[tier];
@@ -721,72 +700,6 @@
                 slider.scrollLeft = 0;
             });
 
-            // REVISI 2: Logic Cek Rasio Gambar Pertama
-            const checkFirstImage = new Image();
-            const firstImgBase = `${IMAGEKIT_BASE}/${item.folder_id}/01`;
-            // Cek PNG dulu karena prioritas
-            checkFirstImage.src = `${firstImgBase}.png?tr=w-400`;
-            
-            checkFirstImage.onload = function() {
-                const isPortrait = this.height > this.width;
-                updateSliderLayout(isPortrait);
-            };
-            checkFirstImage.onerror = function() {
-                // Fallback ke WebP jika PNG gagal
-                const webpCheck = new Image();
-                webpCheck.src = `${firstImgBase}.webp?tr=w-400`;
-                webpCheck.onload = function() {
-                    const isPortrait = this.height > this.width;
-                    updateSliderLayout(isPortrait);
-                };
-                // Fallback ke JPG jika WebP gagal
-                 webpCheck.onerror = function() {
-                    const jpgCheck = new Image();
-                    jpgCheck.src = `${firstImgBase}.jpg?tr=w-400`;
-                    jpgCheck.onload = function() {
-                        const isPortrait = this.height > this.width;
-                        updateSliderLayout(isPortrait);
-                    }
-                }
-            };
-
-            function updateSliderLayout(isPortrait) {
-                const container = document.getElementById('detail-slider-container');
-                const slider = document.getElementById('detail-slider');
-                const items = document.querySelectorAll('.slider-item'); // Kita tambahkan class ini nanti
-
-                if (isPortrait) {
-                    // MODE 4:5
-                    container.classList.remove('aspect-square');
-                    container.classList.add('aspect-[4/5]');
-                    
-                    // Gap & Padding visible
-                    slider.classList.remove('px-0', 'gap-0');
-                    slider.classList.add('px-4', 'gap-3');
-                    
-                    // Item Width 85% (peek next)
-                    items.forEach(el => {
-                        el.classList.remove('w-full');
-                        el.classList.add('w-[85%]');
-                    });
-                } else {
-                    // MODE 1:1 (Full)
-                    container.classList.remove('aspect-[4/5]');
-                    container.classList.add('aspect-square');
-                    
-                    // No Gap, No Padding (Edge to Edge)
-                    slider.classList.remove('px-4', 'gap-3');
-                    slider.classList.add('px-0', 'gap-0');
-
-                    // Item Width 100%
-                    items.forEach(el => {
-                        el.classList.remove('w-[85%]');
-                        el.classList.add('w-full');
-                    });
-                }
-            }
-
-
             for (let i = 1; i <= 10; i++) {
                 const num = String(i).padStart(2, '0');
                 
@@ -797,10 +710,7 @@
                 let imgJpg = `${imgBase}.jpg?tr=w-400`;
                 
                 const slideItem = document.createElement('div');
-                // Default ke 1:1 (w-full) dulu biar ga layout shift aneh, nanti diupdate via updateSliderLayout
-                slideItem.className = "slider-item snap-center shrink-0 w-full h-full flex items-center justify-center bg-wa-header relative border-0 cursor-pointer shadow-lg active:scale-[0.98] transition-all duration-300";
-                // Note: border dihapus di mode 1:1 biar clean, atau bisa ditweak. Disini saya set border-0 untuk 1:1 look.
-                
+                slideItem.className = "snap-center shrink-0 w-[85%] h-full flex items-center justify-center bg-wa-header rounded-xl overflow-hidden relative border border-wa-divider cursor-pointer shadow-lg active:scale-[0.98] transition-transform";
                 slideItem.onclick = () => openGallery(); 
                 
                 // REVISI: Menggunakan inline onerror untuk slider
