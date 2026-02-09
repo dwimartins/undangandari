@@ -51,7 +51,6 @@
             overscroll-behavior-y: contain; /* Prevent parent scrolling */
         }
 
-        /* REVISI 2: Mengizinkan Pan-X (Swipe Gambar) DAN Pan-Y (Scroll Halaman) secara bersamaan */
         .touch-allow-all {
             touch-action: pan-x pan-y;
         }
@@ -75,7 +74,7 @@
         .gallery-open { opacity: 1; pointer-events: auto; transform: scale(1); }
         .gallery-closed { opacity: 0; pointer-events: none; transform: scale(0.95); }
 
-        /* NEW: Sticky Header Slide Animation */
+        /* Sticky Header Slide Animation */
         #smart-header { transition: transform 0.3s ease-in-out, opacity 0.3s ease; }
         .header-hidden { transform: translateY(-100%); opacity: 0; pointer-events: none; }
         .header-visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
@@ -89,7 +88,7 @@
     ======================== -->
     <div id="view-home" class="view-section view-active bg-wa-bg min-h-screen">
         
-        <!-- NEW: SMART STICKY HEADER (Hidden by default, appears on scroll) -->
+        <!-- SMART STICKY HEADER (Hidden initially) -->
         <div id="smart-header" class="fixed top-0 left-0 right-0 z-50 bg-wa-header/95 backdrop-blur-md shadow-md border-b border-wa-divider header-hidden">
             <div class="max-w-md mx-auto px-4 h-16 flex items-center gap-3 overflow-x-auto hide-scroll">
                 
@@ -105,7 +104,7 @@
                     Cara Order
                 </button>
 
-                <!-- 3. Animasi Gratis (With Dot) -->
+                <!-- 3. Animasi Gratis -->
                 <button onclick="openSheet('animasi-sheet')" class="relative flex items-center gap-2 bg-[#2a373f] text-wa-light border border-wa-divider px-4 py-2 rounded-full text-xs font-medium shrink-0 hover:bg-[#374248] transition active:scale-95">
                     <svg class="w-4 h-4 text-wa-gray" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     Animasi
@@ -115,49 +114,67 @@
             </div>
         </div>
 
-        <!-- HERO SECTION -->
-        <div class="relative w-full h-[400px] overflow-hidden border-b border-wa-divider/50 group bg-wa-bg">
+        <!-- HERO SECTION (REVISI: Text & Button Restored) -->
+        <div class="relative w-full h-[450px] overflow-hidden border-b border-wa-divider/50 group bg-wa-bg">
             <div class="absolute inset-0 max-w-md mx-auto relative h-full">
                 <img src="https://ik.imagekit.io/undangandigital/general/hero.webp" class="w-full h-full object-cover opacity-50 transition-transform duration-1000 group-hover:scale-105" alt="Hero Banner">
                 <div class="absolute inset-0 bg-gradient-to-t from-wa-bg via-wa-bg/80 to-transparent"></div>
                 <div class="absolute inset-0 bg-gradient-to-b from-wa-bg/40 to-transparent"></div>
                 
-                <div class="absolute inset-0 flex flex-col justify-end items-center text-center px-6 pb-8 z-10">
-                    <div class="mb-2 animate-[fadeIn_0.8s_ease-out]">
+                <div class="absolute inset-0 flex flex-col justify-end items-center text-center px-6 pb-12 z-10">
+                    <div class="mb-4 animate-[fadeIn_0.8s_ease-out]">
                         <span class="inline-block py-1 px-3 rounded-full bg-wa-teal/10 border border-wa-teal/30 text-wa-teal text-[10px] font-bold tracking-widest uppercase mb-3 backdrop-blur-sm">Premium Collection</span>
                         <h2 class="text-3xl md:text-4xl font-bold text-white leading-tight mb-2 tracking-tight">Undangan Digital <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-emerald-500">Eksklusif & Modern</span></h2>
+                        <!-- RESTORED TEXT -->
+                        <p class="text-wa-gray text-xs md:text-sm max-w-md mx-auto leading-relaxed mt-2">Temukan berbagai undangan premium dengan desain eksklusif. Jadikan hari spesialmu lebih berkesan & modern.</p>
                     </div>
+                    <!-- RESTORED BUTTON -->
+                    <button onclick="kirimPesanUmum()" class="bg-wa-teal text-white font-bold py-3 px-8 rounded-full shadow-lg shadow-wa-teal/30 text-sm flex items-center gap-2 hover:bg-[#008f6f] active:scale-95 transition-all animate-[fadeIn_1s_ease-out_0.3s_both]">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.017-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                        Konsultasi Gratis
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- NEW: ICONIC GRID MENU (Main Navigation) -->
-        <div id="grid-menu" class="max-w-md mx-auto px-4 py-6">
-            <div class="grid grid-cols-5 gap-2 text-center">
-                <!-- 1. Wedding -->
-                <div onclick="selectCategory('Wedding')" class="flex flex-col items-center gap-2 group cursor-pointer">
-                    <div class="w-12 h-12 rounded-2xl bg-[#202c33] border border-wa-divider flex items-center justify-center text-2xl group-hover:border-wa-teal group-hover:bg-[#2a373f] transition shadow-lg group-active:scale-95">💍</div>
-                    <span class="text-[10px] font-medium text-wa-gray group-hover:text-wa-teal">Wedding</span>
+        <!-- NEW GRID MENU: More Colorful & Alive (3x2 Layout) -->
+        <div id="grid-menu" class="max-w-md mx-auto px-4 py-8">
+            <div class="grid grid-cols-3 gap-3">
+                <!-- 1. Wedding (Teal Gradient) -->
+                <div onclick="selectCategory('Wedding')" class="bg-[#202c33] p-3 rounded-xl border border-wa-divider flex flex-col items-center justify-center gap-2 group cursor-pointer hover:border-wa-teal transition active:scale-95 shadow-sm relative overflow-hidden">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-emerald-600 flex items-center justify-center text-xl shadow-lg z-10">💍</div>
+                    <span class="text-xs font-semibold text-wa-light z-10">Wedding</span>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
                 </div>
-                <!-- 2. Kids -->
-                <div onclick="selectCategory('Kids')" class="flex flex-col items-center gap-2 group cursor-pointer">
-                    <div class="w-12 h-12 rounded-2xl bg-[#202c33] border border-wa-divider flex items-center justify-center text-2xl group-hover:border-wa-teal group-hover:bg-[#2a373f] transition shadow-lg group-active:scale-95">🎈</div>
-                    <span class="text-[10px] font-medium text-wa-gray group-hover:text-wa-teal">Kids</span>
+
+                <!-- 2. Kids (Pink/Orange Gradient) -->
+                <div onclick="selectCategory('Kids')" class="bg-[#202c33] p-3 rounded-xl border border-wa-divider flex flex-col items-center justify-center gap-2 group cursor-pointer hover:border-orange-400 transition active:scale-95 shadow-sm relative overflow-hidden">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-xl shadow-lg z-10">🎈</div>
+                    <span class="text-xs font-semibold text-wa-light z-10">Kids</span>
                 </div>
-                <!-- 3. Formal -->
-                <div onclick="selectCategory('Formal')" class="flex flex-col items-center gap-2 group cursor-pointer">
-                    <div class="w-12 h-12 rounded-2xl bg-[#202c33] border border-wa-divider flex items-center justify-center text-2xl group-hover:border-wa-teal group-hover:bg-[#2a373f] transition shadow-lg group-active:scale-95">🏢</div>
-                    <span class="text-[10px] font-medium text-wa-gray group-hover:text-wa-teal">Formal</span>
+
+                <!-- 3. Formal (Blue Gradient) -->
+                <div onclick="selectCategory('Formal')" class="bg-[#202c33] p-3 rounded-xl border border-wa-divider flex flex-col items-center justify-center gap-2 group cursor-pointer hover:border-blue-400 transition active:scale-95 shadow-sm relative overflow-hidden">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-xl shadow-lg z-10">🏢</div>
+                    <span class="text-xs font-semibold text-wa-light z-10">Formal</span>
                 </div>
-                <!-- 4. Teen -->
-                <div onclick="selectCategory('Teen')" class="flex flex-col items-center gap-2 group cursor-pointer">
-                    <div class="w-12 h-12 rounded-2xl bg-[#202c33] border border-wa-divider flex items-center justify-center text-2xl group-hover:border-wa-teal group-hover:bg-[#2a373f] transition shadow-lg group-active:scale-95">🎸</div>
-                    <span class="text-[10px] font-medium text-wa-gray group-hover:text-wa-teal">Teen</span>
+
+                <!-- 4. Teen (Purple Gradient) -->
+                <div onclick="selectCategory('Teen')" class="bg-[#202c33] p-3 rounded-xl border border-wa-divider flex flex-col items-center justify-center gap-2 group cursor-pointer hover:border-purple-400 transition active:scale-95 shadow-sm relative overflow-hidden">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-fuchsia-600 flex items-center justify-center text-xl shadow-lg z-10">🎸</div>
+                    <span class="text-xs font-semibold text-wa-light z-10">Teen</span>
                 </div>
-                <!-- 5. Religi -->
-                <div onclick="selectCategory('Religi')" class="flex flex-col items-center gap-2 group cursor-pointer">
-                    <div class="w-12 h-12 rounded-2xl bg-[#202c33] border border-wa-divider flex items-center justify-center text-2xl group-hover:border-wa-teal group-hover:bg-[#2a373f] transition shadow-lg group-active:scale-95">🕌</div>
-                    <span class="text-[10px] font-medium text-wa-gray group-hover:text-wa-teal">Religi</span>
+
+                <!-- 5. Religi (Green Gradient) -->
+                <div onclick="selectCategory('Religi')" class="bg-[#202c33] p-3 rounded-xl border border-wa-divider flex flex-col items-center justify-center gap-2 group cursor-pointer hover:border-green-400 transition active:scale-95 shadow-sm relative overflow-hidden">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-teal-700 flex items-center justify-center text-xl shadow-lg z-10">🕌</div>
+                    <span class="text-xs font-semibold text-wa-light z-10">Religi</span>
+                </div>
+
+                <!-- 6. Lainnya (Gray Gradient) -->
+                <div onclick="selectCategory('Lainnya')" class="bg-[#202c33] p-3 rounded-xl border border-wa-divider flex flex-col items-center justify-center gap-2 group cursor-pointer hover:border-gray-400 transition active:scale-95 shadow-sm relative overflow-hidden">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-500 to-slate-700 flex items-center justify-center text-xl shadow-lg z-10">📂</div>
+                    <span class="text-xs font-semibold text-wa-light z-10">Lainnya</span>
                 </div>
             </div>
         </div>
@@ -291,8 +308,9 @@
             <div class="max-w-md mx-auto flex gap-3">
                 <button onclick="kirimPesanWA()" class="flex-1 bg-wa-teal text-white font-bold py-3.5 rounded-full shadow-lg shadow-wa-teal/20 text-sm flex justify-center items-center gap-2 hover:bg-[#008f6f] active:scale-[0.98] transition group">
                     <svg class="w-5 h-5 group-hover:animate-bounce" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.017-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-                    Pesan via WhatsApp
-                </button>
+                        Konsultasi Gratis
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -451,7 +469,8 @@
             'Kids': '🎈',
             'Formal': '🏢',
             'Teen': '🎸',
-            'Religi': '🕌'
+            'Religi': '🕌',
+            'Lainnya': '📂'
         };
 
         // --- NEW: SCROLL LOGIC FOR STICKY HEADER ---
@@ -1031,6 +1050,7 @@
         function createPreviewButton(container, url, text, iconType, isPrimary = false) {
             let iconSvg = '';
             if (iconType === 'camera') iconSvg = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>';
+            // Couple Icon for Animation
             else if (iconType === 'play') iconSvg = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>';
             else if (iconType === 'doc') iconSvg = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>';
             else iconSvg = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>';
