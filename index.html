@@ -51,6 +51,11 @@
             overscroll-behavior-y: contain; /* Prevent parent scrolling */
         }
 
+        /* REVISI 1: Memastikan area slider tetap bisa discroll vertikal (halaman) */
+        .touch-pan-y {
+            touch-action: pan-y;
+        }
+
         .snap-x { scroll-snap-type: x mandatory; }
         .snap-center { scroll-snap-align: center; }
         
@@ -173,9 +178,10 @@
         </div>
 
         <!-- Image Slider (Horizontal Thumbnail) -->
+        <!-- REVISI 1: touch-pan-y ditambahkan ke class untuk fix scroll -->
         <div class="max-w-md mx-auto relative bg-black group">
             <div class="w-full aspect-square relative overflow-hidden">
-                <div id="detail-slider" class="flex overflow-x-auto snap-x snap-mandatory hide-scroll h-full items-center px-4 gap-3 smooth-scroll"></div>
+                <div id="detail-slider" class="flex overflow-x-auto snap-x snap-mandatory hide-scroll h-full items-center px-4 gap-3 smooth-scroll touch-pan-y"></div>
                 
                 <!-- Hint Overlay -->
                 <div class="absolute inset-0 pointer-events-none flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -694,7 +700,8 @@
                 const slideItem = document.createElement('div');
                 slideItem.className = "snap-center shrink-0 w-[85%] h-full flex items-center justify-center bg-wa-header rounded-xl overflow-hidden relative border border-wa-divider cursor-pointer shadow-lg active:scale-[0.98] transition-transform";
                 slideItem.onclick = () => openGallery(); 
-                slideItem.innerHTML = `<img src="${imgUrl}" class="w-full h-full object-cover" loading="${i===1?'eager':'lazy'}" onerror="this.src='https://placehold.co/400x500/333?text=Slide+Error'">`;
+                // REVISI 2: Deteksi error gambar -> Hapus elemen jika gambar tidak ada
+                slideItem.innerHTML = `<img src="${imgUrl}" class="w-full h-full object-cover" loading="${i===1?'eager':'lazy'}" onerror="this.parentElement.remove()">`;
                 slider.appendChild(slideItem);
             }
 
@@ -782,6 +789,11 @@
                 // Tambahkan placeholder loading
                 img.style.minHeight = "200px";
                 img.style.background = "#111";
+                
+                // REVISI 2: Hapus elemen img jika gagal dimuat (file tidak ada)
+                img.onerror = function() {
+                    this.remove();
+                };
                 
                 container.appendChild(img);
             }
