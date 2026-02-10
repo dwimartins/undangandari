@@ -157,7 +157,7 @@
                     </div>
                     <button onclick="kirimPesanUmum()" class="bg-wa-teal text-white font-bold py-3 px-8 rounded-full shadow-lg shadow-wa-teal/30 text-sm flex items-center gap-2 hover:bg-[#008f6f] active:scale-95 transition-all animate-[fadeIn_1s_ease-out_0.3s_both]">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.017-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-                        Konsultasi Gratis
+                        Konsultasi Custom Design
                     </button>
                 </div>
             </div>
@@ -837,6 +837,13 @@
 
         function renderHome() {
             const container = document.getElementById('tier-list-container');
+
+            // --- SAFETY CHECK (Added) ---
+            if (!container) {
+                console.error("Error: Element 'tier-list-container' not found in DOM.");
+                return;
+            }
+
             container.innerHTML = '';
 
             // 1. FILTER PRODUCTS BASED ON CURRENT CATEGORY
@@ -957,11 +964,15 @@
             
             const emoji = TIER_CONFIG[tierName] || "🔖";
 
-            document.getElementById('cat-header-title').innerText = `${emoji} ${tierName}`;
-            // REVISI: Update Jumlah Tema
-            document.getElementById('cat-header-count').innerText = `${products.length} Tema Tersedia`;
+            const titleEl = document.getElementById('cat-header-title');
+            if(titleEl) titleEl.innerText = `${emoji} ${tierName}`;
+
+            const countEl = document.getElementById('cat-header-count');
+            if(countEl) countEl.innerText = `${products.length} Tema Tersedia`;
 
             const container = document.getElementById('cat-grid-container');
+            if(!container) return; // Safety check
+            
             container.innerHTML = '';
 
             products.forEach(item => {
@@ -1003,16 +1014,21 @@
             window.currentItem = item;
             window.currentGalleryItem = item; 
 
-            document.getElementById('detail-title').innerText = item.title;
-            document.getElementById('detail-price-real').innerText = 'Rp ' + item.price_real.toLocaleString('id-ID');
-            document.getElementById('detail-price-fake').innerText = 'Rp ' + item.price_fake.toLocaleString('id-ID');
-            document.getElementById('detail-desc').innerText = item.description;
-
-            // REVISI: LABEL DETAIL (Emoji + Kategori + Tier)
-            const detailEmoji = TIER_CONFIG[item.tier] || "✨";
-            let categoryLabel = "Event";
+            const titleEl = document.getElementById('detail-title');
+            if(titleEl) titleEl.innerText = item.title;
             
-            // Logic mapping sederhana berdasarkan ID kategori
+            const priceRealEl = document.getElementById('detail-price-real');
+            if(priceRealEl) priceRealEl.innerText = 'Rp ' + item.price_real.toLocaleString('id-ID');
+            
+            const priceFakeEl = document.getElementById('detail-price-fake');
+            if(priceFakeEl) priceFakeEl.innerText = 'Rp ' + item.price_fake.toLocaleString('id-ID');
+            
+            const descEl = document.getElementById('detail-desc');
+            if(descEl) descEl.innerText = item.description;
+
+            // --- REVISI LOGIC LABEL (V2 - CLEANER) ---
+            let categoryLabel = "Event";
+            // Mapping Category Label
             if(item.category === 'tema-wedding') categoryLabel = "Wedding";
             else if(item.category === 'acara-anak') categoryLabel = "Kids";
             else if(item.category === 'acara-formal') categoryLabel = "Formal";
@@ -1020,164 +1036,204 @@
             else if(item.category === 'school-and-graduation') categoryLabel = "School";
             else categoryLabel = "General";
 
-            // Format: 💎 Wedding Diamond
-            document.getElementById('detail-category').innerText = `${detailEmoji} ${categoryLabel} ${item.tier}`;
+            // 1. Bersihkan Nama Tier dari kata yang berulang (Case Insensitive)
+            // Menghapus kata "Tema", "Wedding", "Kids", "Acara" dari nama tier agar tidak double
+            let cleanTier = item.tier.replace(/Tema|Wedding|Kids|Acara/gi, '').trim();
+
+            // 2. Tentukan Emoji
+            let detailEmoji = "✨"; // Default fallback
+            
+            // Cek 1: Exact match dengan nama tier yang sudah dibersihkan (Misal: "Birthday")
+            if (TIER_CONFIG[cleanTier]) {
+                detailEmoji = TIER_CONFIG[cleanTier];
+            } 
+            // Cek 2: Exact match dengan nama tier asli (Misal: "Tema Adat Jawa")
+            else if (TIER_CONFIG[item.tier]) {
+                detailEmoji = TIER_CONFIG[item.tier];
+            }
+            // Cek 3: Keyword Search (untuk menangani variasi penulisan)
+            else {
+                const lowerTier = cleanTier.toLowerCase();
+                if (lowerTier.includes('birthday') || lowerTier.includes('ulang tahun')) detailEmoji = "🎂";
+                else if (lowerTier.includes('khitan')) detailEmoji = "✂️";
+                else if (lowerTier.includes('aqiqah')) detailEmoji = "👶";
+                else if (lowerTier.includes('jawa') || lowerTier.includes('sunda') || lowerTier.includes('batak') || lowerTier.includes('adat')) detailEmoji = "🔴";
+            }
+
+            // Format Final: [Emoji] [Kategori] [CleanTier]
+            // Contoh: 🎂 Kids Birthday
+            const catEl = document.getElementById('detail-category');
+            if(catEl) catEl.innerText = `${detailEmoji} ${categoryLabel} ${cleanTier}`;
 
             const alertContainer = document.getElementById('detail-photo-alert');
-            if (item.photoRequired === 'yes') {
-                alertContainer.innerHTML = `
-                    <div class="bg-yellow-900/20 border border-yellow-600/30 rounded-xl p-4 flex items-start gap-3">
-                        <svg class="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                        <div>
-                            <h4 class="text-sm font-bold text-yellow-500 mb-1">Penting!</h4>
-                            <p class="text-xs text-wa-light/80 leading-relaxed">Tema ini memerlukan banyak foto prewedding (minimal 5 foto) untuk hasil maksimal.</p>
+            if(alertContainer) {
+                if (item.photoRequired === 'yes') {
+                    alertContainer.innerHTML = `
+                        <div class="bg-yellow-900/20 border border-yellow-600/30 rounded-xl p-4 flex items-start gap-3">
+                            <svg class="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <div>
+                                <h4 class="text-sm font-bold text-yellow-500 mb-1">Penting!</h4>
+                                <p class="text-xs text-wa-light/80 leading-relaxed">Tema ini memerlukan banyak foto prewedding (minimal 5 foto) untuk hasil maksimal.</p>
+                            </div>
                         </div>
-                    </div>
-                `;
-                alertContainer.classList.remove('hidden');
-            } else {
-                alertContainer.classList.add('hidden');
-                alertContainer.innerHTML = '';
+                    `;
+                    alertContainer.classList.remove('hidden');
+                } else {
+                    alertContainer.classList.add('hidden');
+                    alertContainer.innerHTML = '';
+                }
             }
 
             const previewContainer = document.getElementById('detail-preview-buttons');
-            previewContainer.innerHTML = '';
-            
-            const titleLabel = document.createElement('h3');
-            titleLabel.className = "text-xs font-bold text-wa-gray uppercase tracking-wider mb-3 col-span-full flex items-center gap-2";
-            titleLabel.innerHTML = "<span class='w-1 h-3 bg-wa-teal rounded-full'></span> Lihat <span class='text-wa-teal'>Live Pre</span>view";
-            previewContainer.appendChild(titleLabel);
+            if(previewContainer) {
+                previewContainer.innerHTML = '';
+                
+                const titleLabel = document.createElement('h3');
+                titleLabel.className = "text-xs font-bold text-wa-gray uppercase tracking-wider mb-3 col-span-full flex items-center gap-2";
+                titleLabel.innerHTML = "<span class='w-1 h-3 bg-wa-teal rounded-full'></span> Lihat <span class='text-wa-teal'>Live Pre</span>view";
+                previewContainer.appendChild(titleLabel);
 
-            const buttonsWrapper = document.createElement('div');
-            buttonsWrapper.className = "flex flex-col gap-2";
-            previewContainer.appendChild(buttonsWrapper);
-            
-            const baseUrl = item.link.replace(/\/$/, ""); 
-            const sortOrder = ['foto', 'animasi', 'no-foto'];
-            
-            const sortedVariants = (item.variants || [])
-                .filter(v => ['foto', 'animasi', 'no-foto'].includes(v))
-                .sort((a,b) => sortOrder.indexOf(a) - sortOrder.indexOf(b));
+                const buttonsWrapper = document.createElement('div');
+                buttonsWrapper.className = "flex flex-col gap-2";
+                previewContainer.appendChild(buttonsWrapper);
+                
+                const baseUrl = item.link.replace(/\/$/, ""); 
+                const sortOrder = ['foto', 'animasi', 'no-foto'];
+                
+                const sortedVariants = (item.variants || [])
+                    .filter(v => ['foto', 'animasi', 'no-foto'].includes(v))
+                    .sort((a,b) => sortOrder.indexOf(a) - sortOrder.indexOf(b));
 
-            if (sortedVariants.length === 0) {
-                createPreviewButton(buttonsWrapper, item.link, "Preview Undangan", "default", true);
-            } else if (sortedVariants.length === 1) {
-                const variant = sortedVariants[0];
-                const d = getVariantDetails(variant, item, sortedVariants);
-                createPreviewButton(buttonsWrapper, d.url, "Preview " + d.label, d.icon, true);
-            } else if (sortedVariants.length === 2) {
-                const grid = document.createElement('div');
-                grid.className = "grid grid-cols-2 gap-2";
-                buttonsWrapper.appendChild(grid);
-                sortedVariants.forEach(v => {
-                    const d = getVariantDetails(v, item, sortedVariants);
-                    createPreviewButton(grid, d.url, d.label, d.icon, false);
-                });
-            } else {
-                const v1 = sortedVariants[0];
-                const d1 = getVariantDetails(v1, item, sortedVariants);
-                createPreviewButton(buttonsWrapper, d1.url, "Preview " + d1.label, d1.icon, true);
+                if (sortedVariants.length === 0) {
+                    createPreviewButton(buttonsWrapper, item.link, "Preview Undangan", "default", true);
+                } else if (sortedVariants.length === 1) {
+                    const variant = sortedVariants[0];
+                    const d = getVariantDetails(variant, item, sortedVariants);
+                    createPreviewButton(buttonsWrapper, d.url, "Preview " + d.label, d.icon, true);
+                } else if (sortedVariants.length === 2) {
+                    const grid = document.createElement('div');
+                    grid.className = "grid grid-cols-2 gap-2";
+                    buttonsWrapper.appendChild(grid);
+                    sortedVariants.forEach(v => {
+                        const d = getVariantDetails(v, item, sortedVariants);
+                        createPreviewButton(grid, d.url, d.label, d.icon, false);
+                    });
+                } else {
+                    const v1 = sortedVariants[0];
+                    const d1 = getVariantDetails(v1, item, sortedVariants);
+                    createPreviewButton(buttonsWrapper, d1.url, "Preview " + d1.label, d1.icon, true);
 
-                const grid = document.createElement('div');
-                grid.className = "grid grid-cols-2 gap-2";
-                buttonsWrapper.appendChild(grid);
+                    const grid = document.createElement('div');
+                    grid.className = "grid grid-cols-2 gap-2";
+                    buttonsWrapper.appendChild(grid);
 
-                for(let i=1; i<sortedVariants.length; i++) {
-                    const v = sortedVariants[i];
-                    const d = getVariantDetails(v, item, sortedVariants);
-                    createPreviewButton(grid, d.url, d.label, d.icon, false);
+                    for(let i=1; i<sortedVariants.length; i++) {
+                        const v = sortedVariants[i];
+                        const d = getVariantDetails(v, item, sortedVariants);
+                        createPreviewButton(grid, d.url, d.label, d.icon, false);
+                    }
                 }
             }
 
             const variantContainer = document.getElementById('detail-variants');
-            variantContainer.innerHTML = '';
-            if(item.variants && item.variants.length > 0) {
-                item.variants.forEach(v => {
-                    variantContainer.innerHTML += `<a href="${getVariantDetails(v, item, item.variants).url}" target="_blank" class="text-[11px] bg-wa-header border border-wa-divider text-wa-teal hover:text-white hover:bg-wa-teal hover:border-wa-teal px-3 py-1.5 rounded-lg capitalize tracking-wide shadow-sm transition-all duration-200 flex items-center gap-1">
-                        ${v.replace('-', ' ')} <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                    </a>`;
-                });
-            } else {
-                variantContainer.innerHTML = '<span class="text-xs text-wa-gray italic">Tidak ada info fitur khusus</span>';
+            if(variantContainer) {
+                variantContainer.innerHTML = '';
+                if(item.variants && item.variants.length > 0) {
+                    item.variants.forEach(v => {
+                        variantContainer.innerHTML += `<a href="${getVariantDetails(v, item, item.variants).url}" target="_blank" class="text-[11px] bg-wa-header border border-wa-divider text-wa-teal hover:text-white hover:bg-wa-teal hover:border-wa-teal px-3 py-1.5 rounded-lg capitalize tracking-wide shadow-sm transition-all duration-200 flex items-center gap-1">
+                            ${v.replace('-', ' ')} <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                        </a>`;
+                    });
+                } else {
+                    variantContainer.innerHTML = '<span class="text-xs text-wa-gray italic">Tidak ada info fitur khusus</span>';
+                }
             }
 
             const featuresContainer = document.getElementById('detail-features');
-            featuresContainer.innerHTML = '';
-            
-            // Logic to check if domain is dwigital.com
-            const isDwigital = item.link && item.link.includes('dwigital.com');
-
-            // REVISI: LOGIKA FITUR ACARA ANAK
-            const isKidsEvent = item.category === 'acara-anak';
-
-            FEATURES_DB.forEach(f => {
-                // Skip basic exclusions
-                if (item.tier === 'Starter' && (f.id === 'gallery' || f.id === 'animasi')) return;
-                if ((f.id === 'qrcode' || f.id === 'screen') && !isDwigital) return;
-
-                // 1. SEMBUNYIKAN FITUR KHUSUS DI ACARA ANAK
-                if (isKidsEvent && (f.id === 'love' || f.id === 'qrcode' || f.id === 'screen')) return;
-
-                // 2. GANTI NAMA GIFT -> DOMPET DIGITAL
-                let displayTitle = f.title;
-                if (isKidsEvent && f.id === 'gift') {
-                    displayTitle = "Dompet Digital";
-                }
-
-                const chip = document.createElement('button');
-                chip.className = "border border-wa-divider bg-wa-header px-3 py-1.5 rounded-full text-[11px] text-wa-light flex items-center gap-2 hover:border-wa-teal/50 hover:bg-[#2a373f] transition active:scale-95";
-                chip.onclick = () => openFeatureSheet(f);
-                chip.innerHTML = `
-                    <svg class="w-3.5 h-3.5 text-wa-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${f.icon}"></path></svg>
-                    ${displayTitle}
-                `;
-                featuresContainer.appendChild(chip);
-            });
-
-            const extraContainer = document.getElementById('detail-extra-services');
-            extraContainer.innerHTML = '';
-            
-            EXTRA_SERVICES_DB.forEach(s => {
-                const chip = document.createElement('button');
-                chip.className = "border border-wa-divider bg-wa-header px-3 py-1.5 rounded-full text-[11px] text-wa-light flex items-center gap-2 hover:border-wa-teal/50 hover:bg-[#2a373f] transition active:scale-95";
-                chip.onclick = () => openFeatureSheet(s);
-                chip.innerHTML = `
-                    <svg class="w-3.5 h-3.5 text-wa-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${s.icon}"></path></svg>
-                    ${s.title}
-                `;
-                extraContainer.appendChild(chip);
-            });
-
-            const slider = document.getElementById('detail-slider');
-            slider.innerHTML = '';
-
-            requestAnimationFrame(() => {
-                slider.scrollLeft = 0;
-            });
-
-            for (let i = 1; i <= 10; i++) {
-                const num = String(i).padStart(2, '0');
+            if(featuresContainer) {
+                featuresContainer.innerHTML = '';
                 
-                let imgBase = (i <= 8) ? `${IMAGEKIT_BASE}/${item.folder_id}/${num}` : `${IMAGEKIT_BASE}/feature-service/${num}`;
-                let imgPng = `${imgBase}.png?tr=w-400`;
-                let imgWebp = `${imgBase}.webp?tr=w-400`;
-                let imgJpg = `${imgBase}.jpg?tr=w-400`;
-                
-                const slideItem = document.createElement('div');
-                slideItem.className = "snap-center shrink-0 w-[85%] h-full flex items-center justify-center bg-wa-header rounded-xl overflow-hidden relative border border-wa-divider cursor-pointer shadow-lg active:scale-[0.98] transition-transform";
-                slideItem.onclick = () => openGallery(); 
-                
-                slideItem.innerHTML = `<img src="${imgPng}" class="w-full h-full object-cover" loading="${i===1?'eager':'lazy'}" onerror="if(this.src.includes('.png')){this.src='${imgWebp}'}else if(this.src.includes('.webp')){this.src='${imgJpg}'}else{this.parentElement.remove()}" class="w-full h-full object-cover">`;
-                slider.appendChild(slideItem);
+                // Logic to check if domain is dwigital.com
+                const isDwigital = item.link && item.link.includes('dwigital.com');
+
+                // REVISI: LOGIKA FITUR ACARA ANAK
+                const isKidsEvent = item.category === 'acara-anak';
+
+                FEATURES_DB.forEach(f => {
+                    // Skip basic exclusions
+                    if (item.tier === 'Starter' && (f.id === 'gallery' || f.id === 'animasi')) return;
+                    if ((f.id === 'qrcode' || f.id === 'screen') && !isDwigital) return;
+
+                    // 1. SEMBUNYIKAN FITUR KHUSUS DI ACARA ANAK
+                    if (isKidsEvent && (f.id === 'love' || f.id === 'qrcode' || f.id === 'screen')) return;
+
+                    // 2. GANTI NAMA GIFT -> DOMPET DIGITAL
+                    let displayTitle = f.title;
+                    if (isKidsEvent && f.id === 'gift') {
+                        displayTitle = "Dompet Digital";
+                    }
+
+                    const chip = document.createElement('button');
+                    chip.className = "border border-wa-divider bg-wa-header px-3 py-1.5 rounded-full text-[11px] text-wa-light flex items-center gap-2 hover:border-wa-teal/50 hover:bg-[#2a373f] transition active:scale-95";
+                    chip.onclick = () => openFeatureSheet(f);
+                    chip.innerHTML = `
+                        <svg class="w-3.5 h-3.5 text-wa-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${f.icon}"></path></svg>
+                        ${displayTitle}
+                    `;
+                    featuresContainer.appendChild(chip);
+                });
             }
 
-            const progressBar = document.getElementById('slider-progress');
-            slider.onscroll = () => {
-                const maxScroll = slider.scrollWidth - slider.clientWidth;
-                const scrollPct = (slider.scrollLeft / maxScroll) * 100;
-                progressBar.style.width = Math.max(10, scrollPct) + "%";
-            };
-            progressBar.style.width = "10%";
+            const extraContainer = document.getElementById('detail-extra-services');
+            if(extraContainer) {
+                extraContainer.innerHTML = '';
+                
+                EXTRA_SERVICES_DB.forEach(s => {
+                    const chip = document.createElement('button');
+                    chip.className = "border border-wa-divider bg-wa-header px-3 py-1.5 rounded-full text-[11px] text-wa-light flex items-center gap-2 hover:border-wa-teal/50 hover:bg-[#2a373f] transition active:scale-95";
+                    chip.onclick = () => openFeatureSheet(s);
+                    chip.innerHTML = `
+                        <svg class="w-3.5 h-3.5 text-wa-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${s.icon}"></path></svg>
+                        ${s.title}
+                    `;
+                    extraContainer.appendChild(chip);
+                });
+            }
+
+            const slider = document.getElementById('detail-slider');
+            if(slider) {
+                slider.innerHTML = '';
+
+                requestAnimationFrame(() => {
+                    slider.scrollLeft = 0;
+                });
+
+                for (let i = 1; i <= 10; i++) {
+                    const num = String(i).padStart(2, '0');
+                    
+                    let imgBase = (i <= 8) ? `${IMAGEKIT_BASE}/${item.folder_id}/${num}` : `${IMAGEKIT_BASE}/feature-service/${num}`;
+                    let imgPng = `${imgBase}.png?tr=w-400`;
+                    let imgWebp = `${imgBase}.webp?tr=w-400`;
+                    let imgJpg = `${imgBase}.jpg?tr=w-400`;
+                    
+                    const slideItem = document.createElement('div');
+                    slideItem.className = "snap-center shrink-0 w-[85%] h-full flex items-center justify-center bg-wa-header rounded-xl overflow-hidden relative border border-wa-divider cursor-pointer shadow-lg active:scale-[0.98] transition-transform";
+                    slideItem.onclick = () => openGallery(); 
+                    
+                    slideItem.innerHTML = `<img src="${imgPng}" class="w-full h-full object-cover" loading="${i===1?'eager':'lazy'}" onerror="if(this.src.includes('.png')){this.src='${imgWebp}'}else if(this.src.includes('.webp')){this.src='${imgJpg}'}else{this.parentElement.remove()}" class="w-full h-full object-cover">`;
+                    slider.appendChild(slideItem);
+                }
+
+                const progressBar = document.getElementById('slider-progress');
+                if(progressBar) {
+                    slider.onscroll = () => {
+                        const maxScroll = slider.scrollWidth - slider.clientWidth;
+                        const scrollPct = (slider.scrollLeft / maxScroll) * 100;
+                        progressBar.style.width = Math.max(10, scrollPct) + "%";
+                    };
+                    progressBar.style.width = "10%";
+                }
+            }
         }
 
         function openFeatureSheet(feature) {
@@ -1235,37 +1291,39 @@
 
             const galleryView = document.getElementById('view-gallery');
             const container = document.getElementById('gallery-container');
-            container.innerHTML = '';
-            
-            container.scrollTop = 0;
+            if(container) {
+                container.innerHTML = '';
+                
+                container.scrollTop = 0;
 
-            for (let i = 1; i <= 10; i++) {
-                const num = String(i).padStart(2, '0');
-                
-                let imgBase = (i <= 8) ? `${IMAGEKIT_BASE}/${item.folder_id}/${num}` : `${IMAGEKIT_BASE}/feature-service/${num}`;
-                let imgPng = `${imgBase}.png?tr=w-800`;
-                let imgWebp = `${imgBase}.webp?tr=w-800`;
-                let imgJpg = `${imgBase}.jpg?tr=w-800`;
+                for (let i = 1; i <= 10; i++) {
+                    const num = String(i).padStart(2, '0');
+                    
+                    let imgBase = (i <= 8) ? `${IMAGEKIT_BASE}/${item.folder_id}/${num}` : `${IMAGEKIT_BASE}/feature-service/${num}`;
+                    let imgPng = `${imgBase}.png?tr=w-800`;
+                    let imgWebp = `${imgBase}.webp?tr=w-800`;
+                    let imgJpg = `${imgBase}.jpg?tr=w-800`;
 
-                const img = document.createElement('img');
-                img.src = imgPng; 
-                img.className = "w-full h-auto block mb-0"; 
-                img.loading = "lazy";
-                
-                img.style.minHeight = "200px";
-                img.style.background = "#111";
-                
-                img.onerror = function() {
-                    if (this.src.includes('.png')) {
-                        this.src = imgWebp; 
-                    } else if (this.src.includes('.webp')) {
-                        this.src = imgJpg; 
-                    } else {
-                        this.remove(); 
-                    }
-                };
-                
-                container.appendChild(img);
+                    const img = document.createElement('img');
+                    img.src = imgPng; 
+                    img.className = "w-full h-auto block mb-0"; 
+                    img.loading = "lazy";
+                    
+                    img.style.minHeight = "200px";
+                    img.style.background = "#111";
+                    
+                    img.onerror = function() {
+                        if (this.src.includes('.png')) {
+                            this.src = imgWebp; 
+                        } else if (this.src.includes('.webp')) {
+                            this.src = imgJpg; 
+                        } else {
+                            this.remove(); 
+                        }
+                    };
+                    
+                    container.appendChild(img);
+                }
             }
 
             galleryView.classList.remove('gallery-closed');
