@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Katalog Animasi Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        wa: { bg: '#111b21', header: '#202c33', teal: '#00a884', light: '#e9edef', gray: '#8696a0', divider: '#222d36' }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], serif: ['Playfair Display', 'serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #111b21; color: #e9edef; -webkit-tap-highlight-color: transparent; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        .tab-active { border-bottom: 2px solid #00a884; color: #00a884; }
+        .tab-inactive { border-bottom: 2px solid transparent; color: #8696a0; }
+        .grid-anim { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="antialiased min-h-screen pb-20 bg-[#0b141a]">
+
+    <!-- Header Fixed -->
+    <div class="fixed top-0 left-0 right-0 z-50 bg-wa-header/95 backdrop-blur-md border-b border-wa-divider shadow-md">
+        <div class="max-w-md mx-auto px-4 h-14 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="../" class="p-2 -ml-2 rounded-full hover:bg-white/5 text-wa-light"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg></a>
+                <h1 class="font-bold text-lg text-wa-light">Animasi Digital</h1>
+            </div>
+            <!-- Tab Kategori Utama -->
+            <div class="flex overflow-x-auto hide-scroll gap-4 text-xs font-bold uppercase tracking-wider" id="main-tabs">
+                <!-- Tabs will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="pt-20 pb-10 max-w-md mx-auto min-h-screen px-3">
+        
+        <!-- Info Banner -->
+        <div class="bg-wa-header border border-wa-divider rounded-xl p-4 mb-6 text-center">
+            <span class="inline-block px-2 py-0.5 bg-wa-teal/10 text-wa-teal text-[10px] rounded font-bold mb-2 border border-wa-teal/20">GRATIS</span>
+            <p class="text-xs text-wa-gray leading-relaxed">Pilih karakter favoritmu. Screenshot atau sebutkan nama karakternya saat mengisi data undangan.</p>
+        </div>
+
+        <!-- Container Tier (Sub Kategori) -->
+        <div id="content-container" class="space-y-8"></div>
+        
+    </div>
+
+    <!-- SCRIPT DATA & LOGIC -->
+    <script>
+        const IMAGEKIT_BASE = "https://ik.imagekit.io/undangandigital";
+
+        /* === AREA PASTE DATA JSON === 
+           Paste kode dari admin-animasi.html di bawah ini menggantikan variable ANIMASI_DB
+        */
+        
+        const ANIMASI_DB = {
+            "Nuansa Warna": [
+                { "name": "Putih Bersih (White)", "folder": "nuansa-warna/01-putih-bersih", "files": [] }, 
+                { "name": "Putih Gading (Ivory)", "folder": "nuansa-warna/02-putih-gading", "files": [] }
+                // Tambahkan data lainnya disini via Admin Tool
+            ],
+            "Adat Daerah": [
+                { "name": "Aceh", "folder": "adat-daerah/Aceh", "files": ["img1.png", "img2.png"] },
+                { "name": "Batak", "folder": "adat-daerah/Batak", "files": [] }
+            ],
+            "Faceless Islami": [
+                { "name": "Faceless", "folder": "faceless-islami/faceless", "files": [] }
+            ]
+        };
+
+        /* === LOGIC APLIKASI === */
+
+        let currentCategory = Object.keys(ANIMASI_DB)[0];
+
+        function init() {
+            renderTabs();
+            renderContent();
+        }
+
+        function renderTabs() {
+            const tabContainer = document.getElementById('main-tabs');
+            tabContainer.innerHTML = '';
+            
+            Object.keys(ANIMASI_DB).forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = `whitespace-nowrap pb-1 transition-colors ${cat === currentCategory ? 'tab-active' : 'tab-inactive'}`;
+                btn.innerText = cat;
+                btn.onclick = () => {
+                    currentCategory = cat;
+                    renderTabs();
+                    renderContent();
+                    window.scrollTo({top: 0, behavior: 'smooth'});
+                };
+                tabContainer.appendChild(btn);
+            });
+        }
+
+        function renderContent() {
+            const container = document.getElementById('content-container');
+            container.innerHTML = '';
+            
+            const tiers = ANIMASI_DB[currentCategory] || [];
+
+            if (tiers.length === 0) {
+                container.innerHTML = '<div class="text-center text-wa-gray py-10 text-sm">Belum ada data di kategori ini.</div>';
+                return;
+            }
+
+            tiers.forEach(tier => {
+                const section = document.createElement('div');
+                section.className = "fade-in";
+                
+                // Header Tier
+                const header = document.createElement('div');
+                header.className = "flex items-center gap-2 mb-3 pl-1";
+                header.innerHTML = `<div class="w-1 h-4 bg-wa-teal rounded-full"></div><h3 class="font-bold text-wa-light text-sm">${tier.name}</h3>`;
+                section.appendChild(header);
+
+                // Grid Images
+                const grid = document.createElement('div');
+                grid.className = "grid-anim";
+                
+                // Logic Load Image
+                if (tier.files && tier.files.length > 0) {
+                    // MODE MANUAL (Sesuai list di CSV)
+                    tier.files.forEach(filename => {
+                        const url = `${IMAGEKIT_BASE}/${tier.folder}/${filename}`;
+                        grid.appendChild(createImageCard(url, filename));
+                    });
+                } else {
+                    // MODE AUTO-DETECT (Coba load 1.png s/d 20.png)
+                    // Kita buat elemen img dummy, kalau error (404) kita remove
+                    for (let i = 1; i <= 20; i++) {
+                        const formats = ['png', 'jpg', 'webp']; // Prioritas format
+                        // Untuk efisiensi, kita hanya coba PNG dulu secara default, 
+                        // atau bisa buat loop format. Di sini saya buat simpel coba 1-20.png
+                        // Jika kamu punya JPG, ubah ekstensinya atau rename filenya.
+                        
+                        // Cara Hacky untuk static site: Coba load, kalau gagal hide.
+                        const url = `${IMAGEKIT_BASE}/${tier.folder}/${i}.png`; 
+                        grid.appendChild(createImageCard(url, `#${i}`, true));
+                    }
+                }
+
+                section.appendChild(grid);
+                container.appendChild(section);
+            });
+        }
+
+        function createImageCard(url, label, isAuto = false) {
+            const wrapper = document.createElement('div');
+            wrapper.className = "bg-wa-header rounded-lg border border-wa-divider overflow-hidden relative group aspect-[3/4]";
+            
+            // Placeholder/Loader
+            wrapper.innerHTML = `<div class="absolute inset-0 bg-wa-divider/30 animate-pulse"></div>`;
+
+            const img = document.createElement('img');
+            img.className = "w-full h-full object-contain p-1 opacity-0 transition-opacity duration-300";
+            img.loading = "lazy";
+            img.src = url;
+            
+            img.onload = function() {
+                this.classList.remove('opacity-0');
+                wrapper.querySelector('.animate-pulse').remove();
+            };
+
+            img.onerror = function() {
+                if(isAuto) {
+                    // Jika mode auto detect dan gambar tidak ada, hapus elemen wrapper
+                    wrapper.remove();
+                } else {
+                    // Jika mode manual dan error, tampilkan placeholder rusak
+                    wrapper.innerHTML = '<div class="flex items-center justify-center h-full text-xs text-red-500">Img Error</div>';
+                }
+            };
+            
+            // Overlay Zoom Icon
+            const overlay = document.createElement('div');
+            overlay.className = "absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer";
+            overlay.innerHTML = `<svg class="w-6 h-6 text-white drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>`;
+            overlay.onclick = () => window.open(url, '_blank');
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(overlay);
+            return wrapper;
+        }
+
+        // Jalankan
+        init();
+    </script>
+</body>
+</html>
