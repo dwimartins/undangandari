@@ -28,62 +28,115 @@
         body { background-color: #111b21; color: #e9edef; -webkit-tap-highlight-color: transparent; }
         .hide-scroll::-webkit-scrollbar { display: none; }
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-        .sheet-open { transform: translateY(0); }
-        .sheet-closed { transform: translateY(100%); }
         .active-tab { background-color: #00a884; color: white; border-color: transparent; }
         .inactive-tab { background-color: transparent; color: #8696a0; border-color: #222d36; }
+        
+        /* Smooth Fade In */
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
-<body class="antialiased min-h-screen pb-20 bg-[#0b141a]">
+<body class="antialiased min-h-screen bg-[#0b141a]">
 
-    <!-- Header -->
-    <div class="fixed top-0 left-0 right-0 z-40 bg-wa-header/95 backdrop-blur-md shadow-md border-b border-wa-divider">
-        <div class="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <button onclick="window.location.href='../index.html'" class="p-2 -ml-2 rounded-full hover:bg-white/5 transition text-wa-light">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                </button>
-                <div>
-                    <h1 class="font-bold text-base text-wa-light leading-tight">Katalog Aset</h1>
-                    <p class="text-[10px] text-wa-teal font-medium tracking-wide">Animasi & Karakter Digital</p>
+    <!-- ==========================================
+         VIEW 1: HOME CATALOG
+         ========================================== -->
+    <div id="view-home" class="block pb-20">
+        <!-- Header -->
+        <div class="fixed top-0 left-0 right-0 z-40 bg-wa-header/95 backdrop-blur-md shadow-md border-b border-wa-divider">
+            <div class="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <button onclick="window.location.href='../index.html'" class="p-2 -ml-2 rounded-full hover:bg-white/5 transition text-wa-light">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    </button>
+                    <div>
+                        <h1 class="font-bold text-base text-wa-light leading-tight">Katalog Aset</h1>
+                        <p class="text-[10px] text-wa-teal font-medium tracking-wide">Animasi & Karakter Digital</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Scrollable Tabs -->
+            <div class="max-w-md mx-auto px-4 pb-0 overflow-x-auto hide-scroll">
+                <div id="category-tabs" class="flex gap-2 pb-3 min-w-max">
+                    <!-- Tabs injected by JS -->
                 </div>
             </div>
         </div>
-        <!-- Scrollable Tabs -->
-        <div class="max-w-md mx-auto px-4 pb-0 overflow-x-auto hide-scroll">
-            <div id="category-tabs" class="flex gap-2 pb-3 min-w-max">
-                <!-- Tabs injected by JS -->
+
+        <!-- Main Content -->
+        <div class="pt-28 pb-10 max-w-md mx-auto min-h-screen">
+            <div id="loading-spinner" class="flex flex-col items-center justify-center py-20 space-y-4">
+                <div class="w-8 h-8 border-4 border-wa-teal border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-xs text-wa-gray animate-pulse">Memuat koleksi...</p>
+            </div>
+            
+            <!-- List Container (Tier Sections) -->
+            <div id="list-container" class="space-y-8 fade-in"></div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         VIEW 2: TIER DETAIL (2 COLUMNS GRID)
+         ========================================== -->
+    <div id="view-tier" class="hidden min-h-screen pb-10 bg-[#0b141a]">
+        <!-- Tier Header -->
+        <div class="fixed top-0 left-0 right-0 z-40 bg-wa-header/95 backdrop-blur-md shadow-md border-b border-wa-divider">
+            <div class="max-w-md mx-auto px-4 h-16 flex items-center gap-3">
+                <button onclick="closeTier()" class="p-2 -ml-2 rounded-full hover:bg-white/5 transition text-wa-light shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                </button>
+                <div class="truncate">
+                    <h1 id="tier-header-title" class="font-bold text-base text-wa-light leading-tight truncate">Nama Tier</h1>
+                    <p class="text-[10px] text-wa-teal font-medium tracking-wide flex items-center gap-1 mt-0.5">
+                        ✨ <span id="tier-header-category">Kategori</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid Container -->
+        <div class="pt-20 max-w-md mx-auto px-4">
+            <div id="tier-grid" class="grid grid-cols-2 gap-3 fade-in">
+                <!-- Images injected here -->
             </div>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="pt-28 pb-10 max-w-md mx-auto min-h-screen">
-        <div id="loading-spinner" class="flex flex-col items-center justify-center py-20 space-y-4">
-            <div class="w-8 h-8 border-4 border-wa-teal border-t-transparent rounded-full animate-spin"></div>
-            <p class="text-xs text-wa-gray animate-pulse">Memuat koleksi...</p>
+    <!-- ==========================================
+         VIEW 3: LIGHTBOX (FOCUS MODE)
+         ========================================== -->
+    <div id="view-lightbox" class="fixed inset-0 z-[100] bg-black hidden flex-col transition-opacity duration-300">
+        <!-- Top bar -->
+        <div class="h-16 flex items-center justify-between px-4 text-white bg-gradient-to-b from-black/80 to-transparent absolute top-0 left-0 right-0 z-50">
+            <button onclick="closeLightbox()" class="p-2 -ml-2 hover:bg-white/20 rounded-full transition bg-black/20 backdrop-blur">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            </button>
+            <div id="lightbox-counter" class="text-xs font-bold tracking-widest font-mono bg-black/40 px-3 py-1 rounded-full backdrop-blur">1 / 10</div>
+            <div class="w-10"></div> <!-- Balancer -->
         </div>
         
-        <!-- List Container (Tier Sections) -->
-        <div id="list-container" class="space-y-8"></div>
-    </div>
-
-    <!-- Gallery Sheet (Full Screen Modal) -->
-    <div id="view-gallery" class="fixed inset-0 z-[100] bg-black sheet-closed transition-transform duration-300 flex flex-col">
-        <!-- Gallery Header -->
-        <div class="bg-[#202c33] px-4 py-3 flex justify-between items-center shadow-md z-10 border-b border-wa-divider">
-            <div>
-                <h3 id="gallery-title" class="text-white font-bold text-sm">Nama Koleksi</h3>
-                <p id="gallery-count" class="text-[10px] text-wa-teal uppercase tracking-widest font-medium mt-0.5">0 Gambar Tersedia</p>
+        <!-- Image Area -->
+        <div class="flex-1 relative flex items-center justify-center overflow-hidden w-full h-full">
+            <!-- Spinner Background -->
+            <div class="absolute inset-0 flex items-center justify-center -z-10">
+                <div class="w-8 h-8 border-4 border-wa-teal border-t-transparent rounded-full animate-spin"></div>
             </div>
-            <button onclick="closeGallery()" class="bg-[#37404a] p-2 rounded-full text-gray-300 hover:text-white transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        </div>
 
-        <!-- Gallery Content -->
-        <div id="gallery-content" class="flex-1 overflow-y-auto p-3 space-y-3 bg-[#0b141a] hide-scroll">
-            <!-- Images injected here -->
+            <!-- Image -->
+            <img id="lightbox-img" src="" class="max-w-full max-h-full object-contain relative z-10 select-none">
+            
+            <!-- Left Arrow -->
+            <button id="btn-prev" onclick="changeLightboxImage(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-black/60 text-white rounded-full backdrop-blur-md border border-white/20 hover:bg-black/90 transition z-20 active:scale-95 shadow-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            
+            <!-- Right Arrow -->
+            <button id="btn-next" onclick="changeLightboxImage(1)" class="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-black/60 text-white rounded-full backdrop-blur-md border border-white/20 hover:bg-black/90 transition z-20 active:scale-95 shadow-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
         </div>
     </div>
 
@@ -104,10 +157,13 @@
         let categories = new Set();
         let currentCategory = '';
 
+        // Variabel untuk Lightbox & Tier View
+        let currentTierItem = null;
+        let currentImageIndex = 1;
+
         // --- 2. LOAD DATA ---
         async function loadData() {
             try {
-                // Mengambil data dari koleksi 'animasi_catalog'
                 const snapshot = await db.collection('animasi_catalog').get();
                 if (snapshot.empty) {
                     document.getElementById('list-container').innerHTML = '<p class="text-center text-wa-gray text-xs py-10">Belum ada data katalog.</p>';
@@ -117,14 +173,11 @@
 
                 allData = snapshot.docs.map(doc => doc.data());
                 
-                // Ambil daftar kategori unik
                 allData.forEach(item => categories.add(item.category));
                 const sortedCategories = Array.from(categories).sort();
                 
-                // Render Tab Kategori
                 renderTabs(sortedCategories);
 
-                // Pilih kategori pertama sebagai default
                 if(sortedCategories.length > 0) {
                     selectCategory(sortedCategories[0]);
                 }
@@ -151,11 +204,10 @@
             });
         }
 
-        // --- 4. RENDER SECTIONS (GROUP BY TIER) ---
+        // --- 4. RENDER HOME (GROUP BY TIER) ---
         function selectCategory(catName) {
             currentCategory = catName;
             
-            // Update Tampilan Tab
             document.querySelectorAll('#category-tabs button').forEach(btn => {
                 if(btn.dataset.cat === catName) {
                     btn.className = "px-4 py-2 rounded-full text-xs font-bold border transition whitespace-nowrap active-tab shadow-lg shadow-wa-teal/20";
@@ -164,9 +216,7 @@
                 }
             });
 
-            // Filter Data sesuai kategori
             const filtered = allData.filter(item => item.category === catName);
-            // Sort by title A-Z
             filtered.sort((a,b) => a.title.localeCompare(b.title));
             
             const container = document.getElementById('list-container');
@@ -179,14 +229,11 @@
 
             filtered.forEach(item => {
                 const count = item.total || 0;
-                // folder_link di database tidak boleh ada slash di akhir
                 const cleanFolder = item.folder_link.replace(/\/$/, "");
 
-                // Buat Section Container per Tier
                 const section = document.createElement('div');
                 section.className = "mb-4";
 
-                // Batasi preview maksimal 3 gambar pertama
                 const limit = Math.min(count, 3);
                 let cardsHtml = '';
 
@@ -194,11 +241,11 @@
                     cardsHtml = `<div class="col-span-3 bg-[#202c33] p-6 rounded-xl border border-wa-divider text-center text-xs text-wa-gray font-medium">Gambar sedang disiapkan...</div>`;
                 } else {
                     for (let i = 1; i <= limit; i++) {
-                        const thumbUrl = `${cleanFolder}/${i}.png?tr=w-200`; // ImageKit resize
+                        const thumbUrl = `${cleanFolder}/${i}.png?tr=w-200`;
                         const fallbackUrl = `${cleanFolder}/${i}.jpg?tr=w-200`;
 
                         cardsHtml += `
-                            <div onclick="openGalleryById('${item.id}')" class="group relative bg-[#202c33] rounded-xl overflow-hidden border border-wa-divider hover:border-wa-teal/50 transition-all duration-300 active:scale-[0.98] cursor-pointer shadow-sm">
+                            <div onclick="openTier('${item.id}')" class="group relative bg-[#202c33] rounded-xl overflow-hidden border border-wa-divider hover:border-wa-teal/50 transition-all duration-300 active:scale-[0.98] cursor-pointer shadow-sm">
                                 <div class="aspect-[3/4] overflow-hidden relative bg-[#111b21]">
                                     <img src="${thumbUrl}" onerror="this.src='${fallbackUrl}'; this.onerror=null;" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy">
                                     <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
@@ -208,7 +255,6 @@
                     }
                 }
 
-                // Render Header + Grid
                 section.innerHTML = `
                     <div class="px-4 flex justify-between items-center mb-3">
                         <div class="border-l-4 border-wa-teal pl-3">
@@ -218,7 +264,7 @@
                             </div>
                             <p class="text-[10px] text-wa-gray mt-0.5 font-medium tracking-wide uppercase">${count} Koleksi Tersedia</p>
                         </div>
-                        <button onclick="openGalleryById('${item.id}')" class="bg-[#2a373f] border border-wa-divider text-wa-teal text-[10px] font-bold px-3.5 py-1.5 rounded-full hover:bg-wa-teal hover:text-white hover:border-transparent transition active:scale-95 shadow-sm uppercase tracking-wider shrink-0">Lihat Semua</button>
+                        <button onclick="openTier('${item.id}')" class="bg-[#2a373f] border border-wa-divider text-wa-teal text-[10px] font-bold px-3.5 py-1.5 rounded-full hover:bg-wa-teal hover:text-white hover:border-transparent transition active:scale-95 shadow-sm uppercase tracking-wider shrink-0">Lihat Semua</button>
                     </div>
                     <div class="px-4 grid grid-cols-3 gap-3">
                         ${cardsHtml}
@@ -228,71 +274,148 @@
             });
         }
 
-        // --- 5. GALLERY LOGIC ---
-        function openGalleryById(id) {
+        // --- 5. TIER DETAIL LOGIC (GRID 2 COLUMN) ---
+        function openTier(id) {
             const item = allData.find(d => d.id === id);
-            if(item) openGallery(item);
-        }
+            if (!item) return;
 
-        function openGallery(item) {
-            document.getElementById('gallery-title').innerText = item.title;
-            const total = item.total || 0;
-            document.getElementById('gallery-count').innerText = `${total} Karakter Tersedia`;
+            currentTierItem = item;
+
+            // Update Header Tier
+            document.getElementById('tier-header-title').innerText = item.title;
+            document.getElementById('tier-header-category').innerText = item.category;
+
+            const grid = document.getElementById('tier-grid');
+            grid.innerHTML = '';
             
-            const container = document.getElementById('gallery-content');
-            container.innerHTML = '';
-            container.scrollTop = 0;
-
+            const total = item.total || 0;
             const cleanFolder = item.folder_link.replace(/\/$/, "");
 
             if (total === 0) {
-                container.innerHTML = `<div class="h-[60vh] flex flex-col items-center justify-center text-wa-gray"><p class="text-sm">Belum ada gambar di galeri ini.</p></div>`;
+                grid.innerHTML = `<div class="col-span-2 text-center text-wa-gray text-xs py-20">Belum ada gambar di galeri ini.</div>`;
             }
 
-            // LOOPING 1 s/d TOTAL
+            // Loop untuk membuat 2 Column Grid
             for (let i = 1; i <= total; i++) {
-                const imgContainer = document.createElement('div');
-                imgContainer.className = "w-full bg-[#111b21] min-h-[250px] flex flex-col items-center justify-center relative rounded-xl overflow-hidden border border-wa-divider";
+                const thumbUrl = `${cleanFolder}/${i}.png?tr=w-300`;
+                const fallbackUrl = `${cleanFolder}/${i}.jpg?tr=w-300`;
+
+                const card = document.createElement('div');
+                card.className = "bg-[#202c33] rounded-xl overflow-hidden border border-wa-divider cursor-pointer relative group active:scale-[0.98] transition-transform shadow-sm";
+                card.onclick = () => openLightbox(i);
                 
-                const img = document.createElement('img');
-                img.className = "w-full h-auto block";
-                img.loading = "lazy";
-                
-                // URL Constructions
-                // Asumsi nama file: 1.png, 2.png, dst.
-                const basePng = `${cleanFolder}/${i}.png`;
-                const baseJpg = `${cleanFolder}/${i}.jpg`;
-                const baseWebp = `${cleanFolder}/${i}.webp`;
-
-                // Logic load: Default PNG -> Error? JPG -> Error? WEBP -> Error? Hide
-                img.src = basePng;
-                img.onerror = function() {
-                    if (this.src === basePng) {
-                        this.src = baseJpg;
-                    } else if (this.src === baseJpg) {
-                        this.src = baseWebp;
-                    } else {
-                        this.parentElement.style.display = 'none'; // Sembunyikan container jika semua gagal
-                    }
-                };
-
-                // Badge Nomor di pojok kiri atas
-                const badge = document.createElement('div');
-                badge.className = "absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10";
-                badge.innerText = `Karakter #${i}`;
-
-                imgContainer.appendChild(img);
-                imgContainer.appendChild(badge);
-                container.appendChild(imgContainer);
+                card.innerHTML = `
+                    <div class="aspect-[3/4] bg-[#111b21] relative flex justify-center items-center overflow-hidden">
+                        <!-- Loading Spinner Fallback -->
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-5 h-5 border-2 border-wa-teal border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                        
+                        <img src="${thumbUrl}" onerror="this.src='${fallbackUrl}'; this.onerror=null;" class="w-full h-full object-cover relative z-10 transition-transform duration-500 group-hover:scale-110" loading="lazy">
+                        
+                        <!-- Badge Nomor -->
+                        <div class="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10 z-20 shadow-sm">
+                            #${i}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
             }
 
-            document.getElementById('view-gallery').classList.remove('sheet-closed');
-            document.getElementById('view-gallery').classList.add('sheet-open');
+            // Switch View
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-home').classList.remove('block');
+            
+            document.getElementById('view-tier').classList.remove('hidden');
+            document.getElementById('view-tier').classList.add('block');
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
         }
 
-        function closeGallery() {
-            document.getElementById('view-gallery').classList.remove('sheet-open');
-            document.getElementById('view-gallery').classList.add('sheet-closed');
+        function closeTier() {
+            document.getElementById('view-tier').classList.add('hidden');
+            document.getElementById('view-tier').classList.remove('block');
+            
+            document.getElementById('view-home').classList.remove('hidden');
+            document.getElementById('view-home').classList.add('block');
+        }
+
+        // --- 6. LIGHTBOX LOGIC (FOCUS MODE) ---
+        function openLightbox(index) {
+            currentImageIndex = index;
+            updateLightboxImage();
+            document.getElementById('view-lightbox').classList.remove('hidden');
+            document.getElementById('view-lightbox').classList.add('flex');
+            
+            // Disable body scrolling
+            document.body.style.overflow = 'hidden';
+        }
+
+        function updateLightboxImage() {
+            if (!currentTierItem) return;
+            
+            const total = currentTierItem.total || 0;
+            const cleanFolder = currentTierItem.folder_link.replace(/\/$/, "");
+            
+            // Update Counter
+            document.getElementById('lightbox-counter').innerText = `${currentImageIndex} / ${total}`;
+            
+            const imgEl = document.getElementById('lightbox-img');
+            
+            // Load base URLs
+            const basePng = `${cleanFolder}/${currentImageIndex}.png`;
+            const baseJpg = `${cleanFolder}/${currentImageIndex}.jpg`;
+            const baseWebp = `${cleanFolder}/${currentImageIndex}.webp`;
+
+            // Setup fallback chain
+            imgEl.src = basePng;
+            imgEl.onerror = function() {
+                if (this.src === basePng) {
+                    this.src = baseJpg;
+                } else if (this.src === baseJpg) {
+                    this.src = baseWebp;
+                }
+            };
+
+            // Update Arrows Visibility/State
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+
+            if (currentImageIndex <= 1) {
+                btnPrev.style.opacity = '0.3';
+                btnPrev.style.pointerEvents = 'none';
+            } else {
+                btnPrev.style.opacity = '1';
+                btnPrev.style.pointerEvents = 'auto';
+            }
+
+            if (currentImageIndex >= total) {
+                btnNext.style.opacity = '0.3';
+                btnNext.style.pointerEvents = 'none';
+            } else {
+                btnNext.style.opacity = '1';
+                btnNext.style.pointerEvents = 'auto';
+            }
+        }
+
+        function changeLightboxImage(step) {
+            const total = currentTierItem.total || 0;
+            currentImageIndex += step;
+            
+            if (currentImageIndex < 1) currentImageIndex = 1;
+            if (currentImageIndex > total) currentImageIndex = total;
+            
+            updateLightboxImage();
+        }
+
+        function closeLightbox() {
+            document.getElementById('view-lightbox').classList.add('hidden');
+            document.getElementById('view-lightbox').classList.remove('flex');
+            document.getElementById('lightbox-img').src = ''; // Clear image to stop loading
+            
+            // Enable body scrolling
+            document.body.style.overflow = 'auto';
         }
 
         // Start
