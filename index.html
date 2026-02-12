@@ -110,7 +110,6 @@
                     <svg class="w-4 h-4 text-wa-gray" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
                     Cara Order
                 </button>
-                <!-- REVISI 1: Ikon Tombol Header Diganti (Sparkles/Bintang) -->
                 <button onclick="openSheet('animasi-sheet')" class="relative flex items-center gap-2 bg-[#2a373f] text-wa-light border border-wa-divider px-4 py-2 rounded-full text-xs font-medium shrink-0 hover:bg-[#374248] transition active:scale-95">
                     <svg class="w-4 h-4 text-wa-gray" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
                     Animasi
@@ -452,6 +451,31 @@
             { id: 'materials', title: "Download Materi", icon: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4", desc: "Link khusus jika acara tersebut menyediakan file materi atau e-sertifikat yang bisa diunduh tamu." },
             { id: 'sponsors', title: "Logo Partner", icon: "M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z", desc: "Section khusus untuk menampilkan logo-logo perusahaan partner atau sponsor yang bekerja sama." }
         ];
+
+        // ADD-ON FEATURES FOR SCHOOL & GRADUATION
+        const SCHOOL_FEATURES_ADDONS = [
+            { id: 'rundown_school', title: "Susunan Acara", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2", desc: "Jadwal lengkap prosesi wisuda/sidang dari pembukaan hingga penutupan untuk kelancaran acara." },
+            { id: 'dresscode', title: "Dress Code", icon: "M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z", desc: "Informasi ketentuan busana (Toga/Batik/Formal) bagi wisudawan dan tamu undangan." },
+            { id: 'rules', title: "Tata Tertib", icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z", desc: "Poin-poin protokol yang wajib dipatuhi tamu demi menjaga kekhidmatan prosesi sidang/wisuda." },
+            { id: 'streaming', title: "Live Streaming", icon: "M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z", desc: "Tautan langsung ke YouTube/Zoom bagi keluarga atau kerabat yang hadir secara virtual." }
+        ];
+        
+        // ADD-ON FEATURES FOR KIDS
+        const KIDS_FEATURES_ADDONS = [
+            { id: 'parents', title: "Profil Orang Tua", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z", desc: "Menampilkan nama dan foto ayah bunda yang sedang berbahagia atas kelahiran/ulang tahun si kecil." },
+             { id: 'dresscode_kids', title: "Dress Code", icon: "M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z", desc: "Info kostum atau warna baju (e.g. Superhero, Princess) agar pesta semakin meriah." }
+        ];
+
+        // ADD-ON FEATURES FOR TEEN
+        const TEEN_FEATURES_ADDONS = [
+             { id: 'dresscode_teen', title: "Dress Code", icon: "M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z", desc: "Info tema outfit (e.g. Retro, Pastel, White) agar foto-foto kita makin aesthetic." }
+        ];
+
+        // ADD-ON FEATURES FOR OTHER
+        const OTHER_FEATURES_ADDONS = [
+            { id: 'rundown_general', title: "Susunan Acara", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2", desc: "Informasi waktu dan agenda kegiatan agar tamu tidak ketinggalan momen penting." },
+        ];
+
 
         // DATA FITUR LENGKAP
         const FEATURES_DB = [
@@ -867,8 +891,13 @@
             window.currentItem = item;
             window.currentGalleryItem = item; 
 
-            // --- REVISI: Cek apakah ini tema wedding ---
+            // --- REVISI: Cek kategori ---
             const isWedding = item.category === 'tema-wedding';
+            const isSchoolEvent = item.category === 'school-and-graduation';
+            const isKidsEvent = item.category === 'acara-anak';
+            const isTeenEvent = item.category === 'teen-and-card';
+            const isOtherEvent = item.category === 'acara-lainnya';
+            const isFormalEvent = item.category === 'acara-formal';
 
             const titleEl = document.getElementById('detail-title');
             if(titleEl) titleEl.innerText = item.title;
@@ -880,11 +909,11 @@
             if(descEl) descEl.innerText = item.description;
 
             let categoryLabel = "Event";
-            if(item.category === 'tema-wedding') categoryLabel = "Wedding";
-            else if(item.category === 'acara-anak') categoryLabel = "Kids";
-            else if(item.category === 'acara-formal') categoryLabel = "Formal";
-            else if(item.category === 'teen-and-card') categoryLabel = "Teen";
-            else if(item.category === 'school-and-graduation') categoryLabel = "School";
+            if(isWedding) categoryLabel = "Wedding";
+            else if(isKidsEvent) categoryLabel = "Kids";
+            else if(isFormalEvent) categoryLabel = "Formal";
+            else if(isTeenEvent) categoryLabel = "Teen";
+            else if(isSchoolEvent) categoryLabel = "School";
             else categoryLabel = "General";
 
             let cleanTier = (item.tier || "").replace(/Tema|Wedding|Kids|Acara/gi, '').trim();
@@ -975,31 +1004,82 @@
             if(featuresContainer) {
                 featuresContainer.innerHTML = '';
                 const isDwigital = item.link && item.link.includes('dwigital.com');
-                const isKidsEvent = item.category === 'acara-anak';
-                const isFormalEvent = item.category === 'acara-formal';
-
+                
                 let featuresToShow = FEATURES_DB.filter(f => {
                     if (item.tier === 'Starter' && (f.id === 'gallery' || f.id === 'animasi')) return false;
-                    if ((f.id === 'qrcode' || f.id === 'screen') && !isDwigital && !isFormalEvent) return false;
-                    if (isKidsEvent && (f.id === 'love' || f.id === 'qrcode' || f.id === 'screen')) return false;
-                    if (isFormalEvent && (f.id === 'love' || f.id === 'gift' || f.id === 'quotes')) return false;
+                    
+                    // Logic Filter Per Kategori
+                    if (isSchoolEvent) {
+                        if (['love', 'gift'].includes(f.id)) return false; 
+                        if (['qrcode', 'screen'].includes(f.id)) return true;
+                    } 
+                    else if (isKidsEvent) {
+                        if (['love'].includes(f.id)) return false;
+                        if (['rsvp', 'qrcode', 'screen'].includes(f.id)) return true; // RSVP useful for kids party
+                    }
+                    else if (isTeenEvent) {
+                        if (['love'].includes(f.id)) return false;
+                    }
+                    else if (isOtherEvent) {
+                        if (['love'].includes(f.id)) return false;
+                    }
+                    else if (isFormalEvent) {
+                        if (['love', 'gift', 'quotes'].includes(f.id)) return false;
+                        if (['qrcode', 'screen'].includes(f.id)) return true;
+                    }
+                    else {
+                         // Default / Wedding
+                        if ((f.id === 'qrcode' || f.id === 'screen') && !isDwigital) return false;
+                    }
                     return true;
                 });
 
-                if (isFormalEvent) {
-                    featuresToShow = [...featuresToShow, ...FORMAL_FEATURES_ADDONS];
-                }
+                if (isFormalEvent) featuresToShow = [...featuresToShow, ...FORMAL_FEATURES_ADDONS];
+                if (isSchoolEvent) featuresToShow = [...featuresToShow, ...SCHOOL_FEATURES_ADDONS];
+                if (isKidsEvent) featuresToShow = [...featuresToShow, ...KIDS_FEATURES_ADDONS];
+                if (isTeenEvent) featuresToShow = [...featuresToShow, ...TEEN_FEATURES_ADDONS];
+                if (isOtherEvent) featuresToShow = [...featuresToShow, ...OTHER_FEATURES_ADDONS];
 
                 featuresToShow.forEach(f => {
                     let displayTitle = f.title;
                     let displayDesc = f.desc;
-                    if (isKidsEvent && f.id === 'gift') displayTitle = "Dompet Digital";
+                    
+                    // REVISI: Custom wording per kategori
+                    if (isKidsEvent) {
+                        if (f.id === 'music') { displayTitle = "Lagu Ceria"; displayDesc = "Musik latar ceria yang disukai anak-anak."; }
+                        if (f.id === 'gallery') { displayTitle = "Foto Si Kecil"; displayDesc = "Kumpulan foto kelucuan dan tumbuh kembang si kecil."; }
+                        if (f.id === 'gift') { displayTitle = "Kado Ulang Tahun"; displayDesc = "Kirim hadiah atau angpao digital untuk si kecil."; }
+                        if (f.id === 'quotes') { displayTitle = "Doa Orang Tua"; displayDesc = "Harapan dan doa terbaik ayah bunda untuk masa depan anak."; }
+                    }
+
+                    if (isTeenEvent) {
+                        if (f.id === 'music') { displayTitle = "Trending Music"; displayDesc = "Musik hits pilihanmu yang bikin suasana makin asik."; }
+                        if (f.id === 'gallery') { displayTitle = "Portrait Gallery"; displayDesc = "Deretan foto aesthetic dan momen seru kamu."; }
+                        if (f.id === 'wishes') { displayTitle = "Best Wishes"; displayDesc = "Kolom ucapan dan harapan dari bestie-bestie kamu."; }
+                        if (f.id === 'gift') { displayTitle = "Birthday Gift"; displayDesc = "Tanda sayang dan kado dari teman-teman."; }
+                    }
+
+                    if (isOtherEvent) {
+                        if (f.id === 'music') { displayTitle = "Backsound Acara"; displayDesc = "Musik pengiring yang sesuai dengan tema acara."; }
+                        if (f.id === 'gallery') { displayTitle = "Galeri"; displayDesc = "Dokumentasi foto terkait kegiatan acara."; }
+                        if (f.id === 'gift') { displayTitle = "Tanda Kasih"; displayDesc = "Fitur kirim hadiah digital (opsional)."; }
+                    }
+                    
                     if (isFormalEvent) {
                         if (f.id === 'wishes') displayTitle = "Message Wall";
                         if (f.id === 'gallery') displayTitle = "Dokumentasi";
                         if (f.id === 'music') displayDesc = "Lagu instrumen corporate atau grand yang elegan.";
                         if (f.id === 'animasi') displayDesc = "Animasi transisi yang formal dan profesional.";
                     }
+
+                    if (isSchoolEvent) {
+                        if (f.id === 'music') { displayTitle = "Mars & Hymne"; displayDesc = "Otomatis memutar lagu Mars Universitas atau Hymne Sekolah."; }
+                        if (f.id === 'gallery') { displayTitle = "Galeri Kenangan"; displayDesc = "Tampilkan foto-foto nostalgia masa sekolah/kuliah."; }
+                        if (f.id === 'wishes') { displayTitle = "Ucapan Selamat"; displayDesc = "Fitur bagi teman/keluarga memberikan ucapan selamat wisuda."; }
+                        if (f.id === 'quotes') { displayTitle = "Quotes Motivasi"; displayDesc = "Kata-kata mutiara tentang pendidikan dan masa depan."; }
+                        if (f.id === 'animasi') { displayTitle = "Animasi Opening"; displayDesc = "Animasi pembuka yang elegan sesuai tema institusi."; }
+                    }
+
                     const featureObj = { ...f, title: displayTitle, desc: displayDesc };
                     const chip = document.createElement('button');
                     chip.className = "border border-wa-divider bg-wa-header px-3 py-1.5 rounded-full text-[11px] text-wa-light flex items-center gap-2 hover:border-wa-teal/50 hover:bg-[#2a373f] transition active:scale-95";
