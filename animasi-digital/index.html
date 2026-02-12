@@ -90,9 +90,7 @@
                 </button>
                 <div class="truncate">
                     <h1 id="tier-header-title" class="font-bold text-base text-wa-light leading-tight truncate">Nama Tier</h1>
-                    <p class="text-[10px] text-wa-teal font-medium tracking-wide flex items-center gap-1 mt-0.5">
-                        ✨ <span id="tier-header-category">Kategori</span>
-                    </p>
+                    <p id="tier-header-count" class="text-[10px] text-wa-teal font-medium tracking-wide mt-0.5">0 Karakter Tersedia</p>
                 </div>
             </div>
         </div>
@@ -161,6 +159,17 @@
         let currentTierItem = null;
         let currentImageIndex = 1;
 
+        // --- HELPER: TEMPLATE WARNA BERGANTIAN (COLOR CYCLING) ---
+        // Kita menggunakan 6 template warna yang elegan dan tidak over.
+        const TIER_COLORS = [
+            { from: 'from-rose-500/10', bg: 'bg-rose-500/10' },       // 0: Rose / Merah
+            { from: 'from-blue-500/10', bg: 'bg-blue-500/10' },       // 1: Biru / Navy
+            { from: 'from-yellow-500/10', bg: 'bg-yellow-500/10' },   // 2: Emas / Kuning
+            { from: 'from-emerald-500/10', bg: 'bg-emerald-500/10' }, // 3: Hijau Emerald
+            { from: 'from-purple-500/10', bg: 'bg-purple-500/10' },   // 4: Ungu / Lilac
+            { from: 'from-orange-500/10', bg: 'bg-orange-500/10' }    // 5: Orange / Coral
+        ];
+
         // --- 2. LOAD DATA ---
         async function loadData() {
             try {
@@ -196,8 +205,17 @@
             container.innerHTML = '';
             cats.forEach(cat => {
                 const btn = document.createElement('button');
-                btn.className = `px-4 py-2 rounded-full text-xs font-bold border transition whitespace-nowrap inactive-tab`;
-                btn.innerText = cat;
+                btn.className = `px-4 py-2 rounded-full text-xs font-bold border transition whitespace-nowrap inactive-tab flex items-center gap-1.5`;
+                
+                // Format nama kategori: misal "animasi-adat" menjadi "Animasi Adat"
+                let displayName = cat.split(/[-_]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                
+                // Setup ikon otomatis
+                let icon = '✨'; 
+                if (displayName.toLowerCase().includes('warna')) icon = '🎨';
+                else if (displayName.toLowerCase().includes('faceless') || displayName.toLowerCase().includes('islami')) icon = '🧕';
+                
+                btn.innerHTML = `<span>${icon}</span> <span>${displayName}</span>`;
                 btn.onclick = () => selectCategory(cat);
                 btn.dataset.cat = cat;
                 container.appendChild(btn);
@@ -210,9 +228,9 @@
             
             document.querySelectorAll('#category-tabs button').forEach(btn => {
                 if(btn.dataset.cat === catName) {
-                    btn.className = "px-4 py-2 rounded-full text-xs font-bold border transition whitespace-nowrap active-tab shadow-lg shadow-wa-teal/20";
+                    btn.className = "px-4 py-2 rounded-full text-xs font-bold border transition whitespace-nowrap active-tab shadow-lg shadow-wa-teal/20 flex items-center gap-1.5";
                 } else {
-                    btn.className = "px-4 py-2 rounded-full text-xs font-bold border transition whitespace-nowrap inactive-tab hover:bg-wa-header";
+                    btn.className = "px-4 py-2 rounded-full text-xs font-bold border transition whitespace-nowrap inactive-tab hover:bg-wa-header flex items-center gap-1.5";
                 }
             });
 
@@ -227,9 +245,12 @@
                 return;
             }
 
-            filtered.forEach(item => {
+            filtered.forEach((item, index) => {
                 const count = item.total || 0;
                 const cleanFolder = item.folder_link.replace(/\/$/, "");
+                
+                // Ambil warna bergantian berdasarkan index array (0 s/d 5)
+                const glow = TIER_COLORS[index % TIER_COLORS.length]; 
 
                 const section = document.createElement('div');
                 section.className = "mb-4";
@@ -246,9 +267,17 @@
 
                         cardsHtml += `
                             <div onclick="openTier('${item.id}')" class="group relative bg-[#202c33] rounded-xl overflow-hidden border border-wa-divider hover:border-wa-teal/50 transition-all duration-300 active:scale-[0.98] cursor-pointer shadow-sm">
-                                <div class="aspect-[3/4] overflow-hidden relative bg-[#111b21]">
-                                    <img src="${thumbUrl}" onerror="this.src='${fallbackUrl}'; this.onerror=null;" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy">
-                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                                <div class="aspect-[3/4] w-full relative flex items-end justify-center pt-4 bg-[#111b21]">
+                                    
+                                    <!-- EFEK SHADING (Sesuai Snippet User) -->
+                                    <div class="absolute inset-0 bg-gradient-to-t ${glow.from} via-transparent to-transparent opacity-50"></div>
+                                    <div class="absolute bottom-0 w-24 h-24 ${glow.bg} blur-2xl rounded-full"></div>
+
+                                    <!-- IMAGE (object-contain agar tidak terpotong) -->
+                                    <img src="${thumbUrl}" onerror="this.src='${fallbackUrl}'; this.onerror=null;" class="h-[95%] object-contain relative z-10 drop-shadow-xl transition-transform duration-500 group-hover:scale-105" loading="lazy">
+                                    
+                                    <!-- Overlay hover effect -->
+                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors z-20 pointer-events-none"></div>
                                 </div>
                             </div>
                         `;
@@ -280,22 +309,27 @@
             if (!item) return;
 
             currentTierItem = item;
+            const total = item.total || 0;
 
-            // Update Header Tier
+            // Cari index item di dalam kategorinya untuk mendapatkan warna yang sama persis dengan di halaman Home
+            const catItems = allData.filter(d => d.category === item.category).sort((a,b) => a.title.localeCompare(b.title));
+            const tierIndex = catItems.findIndex(d => d.id === item.id);
+            const glow = TIER_COLORS[tierIndex % TIER_COLORS.length];
+
+            // Update Header Tier dengan Jumlah Counter
             document.getElementById('tier-header-title').innerText = item.title;
-            document.getElementById('tier-header-category').innerText = item.category;
+            document.getElementById('tier-header-count').innerText = `${total} Karakter Tersedia`;
 
             const grid = document.getElementById('tier-grid');
             grid.innerHTML = '';
             
-            const total = item.total || 0;
             const cleanFolder = item.folder_link.replace(/\/$/, "");
 
             if (total === 0) {
                 grid.innerHTML = `<div class="col-span-2 text-center text-wa-gray text-xs py-20">Belum ada gambar di galeri ini.</div>`;
             }
 
-            // Loop untuk membuat 2 Column Grid
+            // Loop untuk membuat 2 Column Grid dengan Efek Shading
             for (let i = 1; i <= total; i++) {
                 const thumbUrl = `${cleanFolder}/${i}.png?tr=w-300`;
                 const fallbackUrl = `${cleanFolder}/${i}.jpg?tr=w-300`;
@@ -305,16 +339,21 @@
                 card.onclick = () => openLightbox(i);
                 
                 card.innerHTML = `
-                    <div class="aspect-[3/4] bg-[#111b21] relative flex justify-center items-center overflow-hidden">
+                    <div class="aspect-[3/4] w-full relative flex items-end justify-center pt-4 bg-[#111b21]">
                         <!-- Loading Spinner Fallback -->
                         <div class="absolute inset-0 flex items-center justify-center">
                             <div class="w-5 h-5 border-2 border-wa-teal border-t-transparent rounded-full animate-spin"></div>
                         </div>
                         
-                        <img src="${thumbUrl}" onerror="this.src='${fallbackUrl}'; this.onerror=null;" class="w-full h-full object-cover relative z-10 transition-transform duration-500 group-hover:scale-110" loading="lazy">
+                        <!-- EFEK SHADING -->
+                        <div class="absolute inset-0 bg-gradient-to-t ${glow.from} via-transparent to-transparent opacity-50 pointer-events-none"></div>
+                        <div class="absolute bottom-0 w-24 h-24 ${glow.bg} blur-2xl rounded-full pointer-events-none"></div>
+                        
+                        <!-- IMAGE -->
+                        <img src="${thumbUrl}" onerror="this.src='${fallbackUrl}'; this.onerror=null;" class="h-[95%] w-full object-contain relative z-10 transition-transform duration-500 group-hover:scale-105 drop-shadow-xl" loading="lazy">
                         
                         <!-- Badge Nomor -->
-                        <div class="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10 z-20 shadow-sm">
+                        <div class="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10 z-20 shadow-sm pointer-events-none">
                             #${i}
                         </div>
                     </div>
