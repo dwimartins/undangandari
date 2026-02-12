@@ -522,6 +522,9 @@
         let groupedProducts = {};
         let currentCategoryFilter = 'tema-wedding'; 
         let TIER_CONFIG = {};
+        
+        // REVISI: Variabel untuk melacak navigasi internal
+        let hasInternalNavigation = false;
 
         // Variabel Status Galeri Slider
         let currentGalleryIndex = 0;
@@ -686,11 +689,20 @@
         }
 
         function navigateTo(path) {
+            // REVISI: Tandai bahwa ini adalah navigasi internal
+            hasInternalNavigation = true;
             window.location.hash = path;
         }
 
         function goBack() {
-            window.history.back();
+            // REVISI: Logika Back Button Cerdas
+            // Jika user menavigasi dari dalam aplikasi, gunakan history browser
+            if (hasInternalNavigation && window.history.length > 1) {
+                window.history.back();
+            } else {
+                // Jika user membuka link langsung (Direct Link via WA), paksa kembali ke Home
+                window.location.hash = '#/';
+            }
         }
 
         async function loadData() {
