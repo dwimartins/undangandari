@@ -85,7 +85,8 @@
         <!-- Tier Header -->
         <div class="fixed top-0 left-0 right-0 z-40 bg-wa-header/95 backdrop-blur-md shadow-md border-b border-wa-divider">
             <div class="max-w-md mx-auto px-4 h-16 flex items-center gap-3">
-                <button onclick="closeTier()" class="p-2 -ml-2 rounded-full hover:bg-white/5 transition text-wa-light shrink-0">
+                <!-- REVISI: Tombol back memanggil history.back() -->
+                <button onclick="history.back()" class="p-2 -ml-2 rounded-full hover:bg-white/5 transition text-wa-light shrink-0">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 </button>
                 <div class="truncate">
@@ -109,7 +110,8 @@
     <div id="view-lightbox" class="fixed inset-0 z-[100] bg-black hidden flex-col transition-opacity duration-300">
         <!-- Top bar -->
         <div class="h-16 flex items-center justify-between px-4 text-white bg-gradient-to-b from-black/80 to-transparent absolute top-0 left-0 right-0 z-50">
-            <button onclick="closeLightbox()" class="p-2 -ml-2 hover:bg-white/20 rounded-full transition bg-black/20 backdrop-blur">
+            <!-- REVISI: Tombol back memanggil history.back() -->
+            <button onclick="history.back()" class="p-2 -ml-2 hover:bg-white/20 rounded-full transition bg-black/20 backdrop-blur">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
             </button>
             <div id="lightbox-counter" class="text-xs font-bold tracking-widest font-mono bg-black/40 px-3 py-1 rounded-full backdrop-blur">1 / 10</div>
@@ -160,7 +162,6 @@
         let currentImageIndex = 1;
 
         // --- HELPER: TEMPLATE WARNA BERGANTIAN (COLOR CYCLING) ---
-        // Kita menggunakan 6 template warna yang elegan dan tidak over.
         const TIER_COLORS = [
             { from: 'from-rose-500/10', bg: 'bg-rose-500/10' },       // 0: Rose / Merah
             { from: 'from-blue-500/10', bg: 'bg-blue-500/10' },       // 1: Biru / Navy
@@ -170,9 +171,40 @@
             { from: 'from-orange-500/10', bg: 'bg-orange-500/10' }    // 5: Orange / Coral
         ];
 
+        // --- HISTORY MANAGEMENT (BACK BUTTON FIX) ---
+        window.addEventListener('popstate', (event) => {
+            const state = event.state;
+            
+            // Logic: Cek state history untuk menentukan view mana yang aktif
+            if (state && state.view === 'lightbox') {
+                // (Jarang terjadi, biasanya browser forward)
+                document.getElementById('view-lightbox').classList.remove('hidden');
+                document.getElementById('view-lightbox').classList.add('flex');
+            } else if (state && state.view === 'tier') {
+                // Back dari Lightbox ke Tier
+                // ATAU Forward dari Home ke Tier
+                
+                // 1. Tutup Lightbox jika terbuka
+                _internalHideLightbox();
+                
+                // 2. Pastikan Tier View terbuka & dirender
+                // Jika data sudah ada, render ulang (aman)
+                if (allData.length > 0) {
+                    _internalRenderTier(state.id);
+                }
+            } else {
+                // Back ke Home (State null atau home)
+                _internalHideLightbox();
+                _internalHideTier();
+            }
+        });
+
         // --- 2. LOAD DATA ---
         async function loadData() {
             try {
+                // Set initial state agar tombol back dari home tidak error
+                history.replaceState({ view: 'home' }, '', '');
+
                 const snapshot = await db.collection('animasi_catalog').get();
                 if (snapshot.empty) {
                     document.getElementById('list-container').innerHTML = '<p class="text-center text-wa-gray text-xs py-10">Belum ada data katalog.</p>';
@@ -193,6 +225,9 @@
 
                 document.getElementById('loading-spinner').style.display = 'none';
 
+                // Cek Deep Link (Opsional: Jika user refresh di URL ber-hash)
+                // if (window.location.hash.includes('tier-')) { ... }
+
             } catch (error) {
                 console.error("Error loading data:", error);
                 document.getElementById('loading-spinner').innerHTML = `<p class="text-red-400 text-xs">Gagal memuat data.<br>${error.message}</p>`;
@@ -207,10 +242,8 @@
                 const btn = document.createElement('button');
                 btn.className = `px-4 py-2 rounded-full text-xs font-bold border transition whitespace-nowrap inactive-tab flex items-center gap-1.5`;
                 
-                // Format nama kategori: misal "animasi-adat" menjadi "Animasi Adat"
                 let displayName = cat.split(/[-_]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
                 
-                // Setup ikon otomatis
                 let icon = '✨'; 
                 if (displayName.toLowerCase().includes('warna')) icon = '🎨';
                 else if (displayName.toLowerCase().includes('faceless') || displayName.toLowerCase().includes('islami')) icon = '🧕';
@@ -248,8 +281,6 @@
             filtered.forEach((item, index) => {
                 const count = item.total || 0;
                 const cleanFolder = item.folder_link.replace(/\/$/, "");
-                
-                // Ambil warna bergantian berdasarkan index array (0 s/d 5)
                 const glow = TIER_COLORS[index % TIER_COLORS.length]; 
 
                 const section = document.createElement('div');
@@ -268,15 +299,9 @@
                         cardsHtml += `
                             <div onclick="openTier('${item.id}')" class="group relative bg-[#202c33] rounded-xl overflow-hidden border border-wa-divider hover:border-wa-teal/50 transition-all duration-300 active:scale-[0.98] cursor-pointer shadow-sm">
                                 <div class="aspect-[3/4] w-full relative flex items-end justify-center pt-4 bg-[#111b21]">
-                                    
-                                    <!-- EFEK SHADING (Sesuai Snippet User) -->
                                     <div class="absolute inset-0 bg-gradient-to-t ${glow.from} via-transparent to-transparent opacity-50"></div>
                                     <div class="absolute bottom-0 w-24 h-24 ${glow.bg} blur-2xl rounded-full"></div>
-
-                                    <!-- IMAGE (object-contain agar tidak terpotong) -->
                                     <img src="${thumbUrl}" onerror="this.src='${fallbackUrl}'; this.onerror=null;" class="h-[95%] object-contain relative z-10 drop-shadow-xl transition-transform duration-500 group-hover:scale-105" loading="lazy">
-                                    
-                                    <!-- Overlay hover effect -->
                                     <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors z-20 pointer-events-none"></div>
                                 </div>
                             </div>
@@ -304,19 +329,27 @@
         }
 
         // --- 5. TIER DETAIL LOGIC (GRID 2 COLUMN) ---
+        
+        // Fungsi Publik (Dipanggil saat klik) - Memanipulasi History
         function openTier(id) {
+            // Push state ke history browser
+            history.pushState({ view: 'tier', id: id }, '', `#tier-${id}`);
+            // Panggil fungsi internal untuk render UI
+            _internalRenderTier(id);
+        }
+
+        // Fungsi Internal (Render UI) - Dipanggil oleh openTier dan popstate
+        function _internalRenderTier(id) {
             const item = allData.find(d => d.id === id);
             if (!item) return;
 
             currentTierItem = item;
             const total = item.total || 0;
 
-            // Cari index item di dalam kategorinya untuk mendapatkan warna yang sama persis dengan di halaman Home
             const catItems = allData.filter(d => d.category === item.category).sort((a,b) => a.title.localeCompare(b.title));
             const tierIndex = catItems.findIndex(d => d.id === item.id);
             const glow = TIER_COLORS[tierIndex % TIER_COLORS.length];
 
-            // Update Header Tier dengan Jumlah Counter
             document.getElementById('tier-header-title').innerText = item.title;
             document.getElementById('tier-header-count').innerText = `${total} Karakter Tersedia`;
 
@@ -329,30 +362,22 @@
                 grid.innerHTML = `<div class="col-span-2 text-center text-wa-gray text-xs py-20">Belum ada gambar di galeri ini.</div>`;
             }
 
-            // Loop untuk membuat 2 Column Grid dengan Efek Shading
             for (let i = 1; i <= total; i++) {
                 const thumbUrl = `${cleanFolder}/${i}.png?tr=w-300`;
                 const fallbackUrl = `${cleanFolder}/${i}.jpg?tr=w-300`;
 
                 const card = document.createElement('div');
                 card.className = "bg-[#202c33] rounded-xl overflow-hidden border border-wa-divider cursor-pointer relative group active:scale-[0.98] transition-transform shadow-sm";
-                card.onclick = () => openLightbox(i);
+                card.onclick = () => openLightbox(i); // Membuka lightbox via fungsi public
                 
                 card.innerHTML = `
                     <div class="aspect-[3/4] w-full relative flex items-end justify-center pt-4 bg-[#111b21]">
-                        <!-- Loading Spinner Fallback -->
                         <div class="absolute inset-0 flex items-center justify-center">
                             <div class="w-5 h-5 border-2 border-wa-teal border-t-transparent rounded-full animate-spin"></div>
                         </div>
-                        
-                        <!-- EFEK SHADING -->
                         <div class="absolute inset-0 bg-gradient-to-t ${glow.from} via-transparent to-transparent opacity-50 pointer-events-none"></div>
                         <div class="absolute bottom-0 w-24 h-24 ${glow.bg} blur-2xl rounded-full pointer-events-none"></div>
-                        
-                        <!-- IMAGE -->
                         <img src="${thumbUrl}" onerror="this.src='${fallbackUrl}'; this.onerror=null;" class="h-[95%] w-full object-contain relative z-10 transition-transform duration-500 group-hover:scale-105 drop-shadow-xl" loading="lazy">
-                        
-                        <!-- Badge Nomor -->
                         <div class="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10 z-20 shadow-sm pointer-events-none">
                             #${i}
                         </div>
@@ -368,11 +393,11 @@
             document.getElementById('view-tier').classList.remove('hidden');
             document.getElementById('view-tier').classList.add('block');
             
-            // Scroll to top
             window.scrollTo(0, 0);
         }
 
-        function closeTier() {
+        // Fungsi Internal untuk menutup Tier (Kembali ke Home)
+        function _internalHideTier() {
             document.getElementById('view-tier').classList.add('hidden');
             document.getElementById('view-tier').classList.remove('block');
             
@@ -381,13 +406,19 @@
         }
 
         // --- 6. LIGHTBOX LOGIC (FOCUS MODE) ---
+        
+        // Fungsi Publik
         function openLightbox(index) {
+            history.pushState({ view: 'lightbox' }, '', '#focus');
+            _internalRenderLightbox(index);
+        }
+
+        // Fungsi Internal Render
+        function _internalRenderLightbox(index) {
             currentImageIndex = index;
             updateLightboxImage();
             document.getElementById('view-lightbox').classList.remove('hidden');
             document.getElementById('view-lightbox').classList.add('flex');
-            
-            // Disable body scrolling
             document.body.style.overflow = 'hidden';
         }
 
@@ -397,27 +428,19 @@
             const total = currentTierItem.total || 0;
             const cleanFolder = currentTierItem.folder_link.replace(/\/$/, "");
             
-            // Update Counter
             document.getElementById('lightbox-counter').innerText = `${currentImageIndex} / ${total}`;
             
             const imgEl = document.getElementById('lightbox-img');
-            
-            // Load base URLs
             const basePng = `${cleanFolder}/${currentImageIndex}.png`;
             const baseJpg = `${cleanFolder}/${currentImageIndex}.jpg`;
             const baseWebp = `${cleanFolder}/${currentImageIndex}.webp`;
 
-            // Setup fallback chain
             imgEl.src = basePng;
             imgEl.onerror = function() {
-                if (this.src === basePng) {
-                    this.src = baseJpg;
-                } else if (this.src === baseJpg) {
-                    this.src = baseWebp;
-                }
+                if (this.src === basePng) this.src = baseJpg;
+                else if (this.src === baseJpg) this.src = baseWebp;
             };
 
-            // Update Arrows Visibility/State
             const btnPrev = document.getElementById('btn-prev');
             const btnNext = document.getElementById('btn-next');
 
@@ -441,19 +464,16 @@
         function changeLightboxImage(step) {
             const total = currentTierItem.total || 0;
             currentImageIndex += step;
-            
             if (currentImageIndex < 1) currentImageIndex = 1;
             if (currentImageIndex > total) currentImageIndex = total;
-            
             updateLightboxImage();
         }
 
-        function closeLightbox() {
+        // Fungsi Internal Tutup Lightbox
+        function _internalHideLightbox() {
             document.getElementById('view-lightbox').classList.add('hidden');
             document.getElementById('view-lightbox').classList.remove('flex');
-            document.getElementById('lightbox-img').src = ''; // Clear image to stop loading
-            
-            // Enable body scrolling
+            document.getElementById('lightbox-img').src = ''; 
             document.body.style.overflow = 'auto';
         }
 
