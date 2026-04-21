@@ -361,6 +361,17 @@
                         variantsArray = row.variants.split(',').map(item => item.trim());
                     }
 
+                    // --- REVISI TERBARU: Membaca kolom features_list sebagai String ---
+                    let cleanFeaturesList = "";
+                    const rawFeatures = row.features_list || row['features list'] || row['features-list'];
+                    if (rawFeatures) {
+                        // Katalog (index.html) menggunakan .split(',') untuk features_list,
+                        // artinya data WAJIB dikirim sebagai String biasa, BUKAN Array.
+                        // Kita hapus petik ganda ekstra, karena Firestore otomatis menganggapnya String.
+                        cleanFeaturesList = rawFeatures.replace(/"/g, '').trim();
+                    }
+                    // ----------------------------------------------------
+
                     let cleanDesc = row.description || "";
                     cleanDesc = cleanDesc.replace(/\uFFFD/g, '-'); 
 
@@ -378,6 +389,7 @@
                         link: row.link,
                         description: cleanDesc,
                         variants: variantsArray,
+                        features_list: cleanFeaturesList, // <-- Field features_list dikirim sebagai String murni
                         folder_id: row.folder_id,
                         "photo-required": row['photo-required'] || row['photo_required'] || 'no',
                         updated_at: new Date()
