@@ -641,7 +641,7 @@
                         tier: (d.tier || 'Starter').trim(),
                         variants: variants,
                         link: d.link || '#',
-                        photoRequired: d['photo-required'] || d.photo_required || 'no',
+                        notification: d.notification || d['photo-required'] || d.photo_required || '',
                         
                         // NEW: Ambil data features_list jika sudah dibuat di Firestore/CSV
                         features_list: d.features_list || d.features || ''
@@ -855,7 +855,13 @@
             document.getElementById('detail-title').innerText = item.title;
             document.getElementById('detail-price-real').innerText = 'Rp ' + item.price_real.toLocaleString('id-ID');
             document.getElementById('detail-price-fake').innerText = 'Rp ' + item.price_fake.toLocaleString('id-ID');
-            document.getElementById('detail-desc').innerText = item.description;
+            
+            // SMART DESCRIPTION: Gabungkan deskripsi unik CSV dengan Global Deskripsi dari JS
+            let finalDesc = item.description.trim();
+            if (typeof GLOBAL_DESCRIPTION_TEMPLATE !== 'undefined' && !finalDesc.includes('Swipe ke kiri')) {
+                finalDesc += "\n\n" + GLOBAL_DESCRIPTION_TEMPLATE.trim();
+            }
+            document.getElementById('detail-desc').innerText = finalDesc;
 
             let categoryLabel = "Event";
             if(isWedding) categoryLabel = "Wedding";
@@ -871,8 +877,21 @@
 
             const alertContainer = document.getElementById('detail-photo-alert');
             if(alertContainer) {
-                if (item.photoRequired === 'yes') {
-                    alertContainer.innerHTML = `<div class="bg-yellow-900/20 border border-yellow-600/30 rounded-xl p-4 flex items-start gap-3"><svg class="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg><div><h4 class="text-sm font-bold text-yellow-500 mb-1">Penting!</h4><p class="text-xs text-wa-light/80 leading-relaxed">Tema ini memerlukan banyak foto prewedding (minimal 5 foto) untuk hasil maksimal.</p></div></div>`;
+                let alertKey = item.notification;
+                
+                if (typeof UI_NOTIFICATIONS !== 'undefined' && UI_NOTIFICATIONS[alertKey]) {
+                    const config = UI_NOTIFICATIONS[alertKey];
+                    const theme = getAlertThemeClasses(config.theme);
+                    // Ambil path ikon dari ICONS di data-fitur.js, fallback ke ikon info default
+                    const iconPath = (typeof ICONS !== 'undefined' && ICONS[config.iconType]) ? ICONS[config.iconType] : 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z';
+                    
+                    alertContainer.innerHTML = `<div class="${theme.bg} border ${theme.border} rounded-xl p-4 flex items-start gap-3"><svg class="w-5 h-5 ${theme.text} shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPath}"></path></svg><div><h4 class="text-sm font-bold ${theme.text} mb-1">${config.title}</h4><p class="text-xs text-wa-light/80 leading-relaxed">${config.message}</p></div></div>`;
+                    alertContainer.classList.remove('hidden');
+                } else if (alertKey === 'yes') {
+                    // Fallback aman untuk format data CSV lama
+                    const theme = getAlertThemeClasses('yellow');
+                    const iconPath = 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z';
+                    alertContainer.innerHTML = `<div class="${theme.bg} border ${theme.border} rounded-xl p-4 flex items-start gap-3"><svg class="w-5 h-5 ${theme.text} shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPath}"></path></svg><div><h4 class="text-sm font-bold ${theme.text} mb-1">Penting!</h4><p class="text-xs text-wa-light/80 leading-relaxed">Tema ini memerlukan banyak foto prewedding (minimal 5 foto) untuk hasil maksimal.</p></div></div>`;
                     alertContainer.classList.remove('hidden');
                 } else {
                     alertContainer.classList.add('hidden');
@@ -1011,6 +1030,17 @@
         }
 
         // --- 7. UTILS & ACTIONS ---
+        function getAlertThemeClasses(color) {
+            const themes = {
+                yellow: { bg: "bg-yellow-900/20", border: "border-yellow-600/30", text: "text-yellow-500" },
+                blue: { bg: "bg-blue-900/20", border: "border-blue-500/30", text: "text-blue-400" },
+                purple: { bg: "bg-purple-900/20", border: "border-purple-600/30", text: "text-purple-400" },
+                teal: { bg: "bg-teal-900/20", border: "border-teal-600/30", text: "text-teal-400" },
+                red: { bg: "bg-red-900/20", border: "border-red-600/30", text: "text-red-500" }
+            };
+            return themes[color] || themes.blue;
+        }
+
         function getVariantDetails(variant, item, allVariants) {
             const baseUrl = item.link.replace(/\/$/, ""); 
             let url = item.link;
