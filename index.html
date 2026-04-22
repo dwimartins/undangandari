@@ -452,7 +452,7 @@
         let currentGalleryIndex = 0;
         let galleryImagesArray = [];
 
-        const IMAGEKIT_BASE = "https://ik.imagekit.io/undangandigital";
+        const IMAGEKIT_BASE = "https://ik.imagekit.io";
 
         // --- 2. UI LOGIC & SCROLL ---
         let lastScrollTop = 0;
@@ -1001,7 +1001,7 @@
                 requestAnimationFrame(() => { slider.scrollLeft = 0; });
                 for (let i = 1; i <= 10; i++) {
                     const num = String(i).padStart(2, '0');
-                    let imgBase = (i <= 8) ? `${IMAGEKIT_BASE}/${item.folder_id}/${num}` : `${IMAGEKIT_BASE}/feature-service/${num}`;
+                    let imgBase = (i <= 8) ? `${IMAGEKIT_BASE}/${item.folder_id}/${num}` : `${IMAGEKIT_BASE}/undangandigital/feature-service/${num}`;
                     let imgPng = `${imgBase}.png?tr=w-400`;
                     let imgWebp = `${imgBase}.webp?tr=w-400`;
                     let imgJpg = `${imgBase}.jpg?tr=w-400`;
