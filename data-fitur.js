@@ -165,3 +165,57 @@ const CATEGORY_DATA = {
     'School': { id: 'school-and-graduation', label: 'School & Grad', icon: '🎓', desc: 'Rayakan kelulusan dan perpisahan sekolah.' },
     'Lainnya': { id: 'acara-lainnya', label: 'Other Events', icon: '📂', desc: 'Berbagai tema unik untuk kebutuhan acaramu.' }
 };
+
+
+// ============================================================================
+// 6. KONFIGURASI DESKRIPSI & NOTIFIKASI TEMA
+// ============================================================================
+
+// Teks mutlak yang akan selalu muncul di bawah deskripsi unik dari CSV
+const GLOBAL_DESCRIPTION_TEMPLATE = `
+• Swipe ke kiri untuk melihat preview & fitur lengkap
+• Semua fitur aktif, pengerjaan maksimal 24 jam
+• Gratis revisi sampai hari H
+• Tersedia layanan Express (2 jam selesai) – wajib DP 50% + fee express Rp20000`;
+
+// Kamus notifikasi UI Dinamis (Menggantikan PHOTO_NOTIFICATIONS lama)
+// Key di bawah ini disesuaikan dengan isi dari kolom "notification" di CSV Anda.
+const UI_NOTIFICATIONS = {
+    "wedding_no_image": {
+        title: "Catatan Tema",
+        message: "Ini adalah tema starter tanpa foto, untuk request penambahan foto ataupun animasi digital, akan dikenakan fee tambahan Rp. 20.000",
+        theme: "purple", // Pilihan warna: yellow, blue, purple, teal, red
+        iconType: "gallery" // Mengambil ikon dari dictionary ICONS di atas
+    },
+    
+    "wedding_optional_image": {
+        title: "Sekilas Info",
+        message: `Tidak punya foto prewed? Tenang, tersedia animasi karakter 3D gratis sesuai kebutuhanmu, <a href="/animasi-digital" target="_blank" class="text-blue-400 hover:text-blue-300 underline font-semibold transition">cek disini</a>`,
+        theme: "blue",
+        iconType: "animasi"
+    },
+    
+    "wedding_required_image": {
+        title: "Penting!",
+        message: "Tema ini memerlukan banyak foto prewedding (minimal 5 foto) untuk hasil maksimal.",
+        theme: "yellow",
+        iconType: "warning"
+    },
+
+    // --- CONTOH TAMBAHAN UNTUK KATEGORI LAIN ---
+    // Anda bisa menambah sebanyak apapun key baru di bawah ini tanpa perlu mengedit HTML lagi
+    
+    "aqiqah_info": {
+        title: "Info Tema Aqiqah",
+        message: "Untuk tema aqiqah, Anda bisa menambahkan maksimal 3 orang anak dengan acara yang sama dalam satu undangan.",
+        theme: "teal",
+        iconType: "user"
+    },
+
+    "khitan_info": {
+        title: "Spesial Khitanan",
+        message: "Untuk tema khitan, Anda bisa menambahkan maksimal 3 orang anak dengan acara yang sama dalam satu undangan.",
+        theme: "red",
+        iconType: "badgeCheck"
+    }
+};
