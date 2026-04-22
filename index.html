@@ -100,13 +100,24 @@
         .grid-3d:hover { transform: translateY(-2px); }
         .grid-3d:active { transform: translateY(2px); box-shadow: 0 0 0 0 transparent !important; }
 
-        /* Grid Colors */
-        .hover-shadow-gold:hover { box-shadow: 0 6px 0 0 #eab308; border-color: #eab308; }
-        .hover-shadow-cyan:hover { box-shadow: 0 6px 0 0 #22d3ee; border-color: #22d3ee; }
-        .hover-shadow-blue:hover { box-shadow: 0 6px 0 0 #3b82f6; border-color: #3b82f6; }
-        .hover-shadow-purple:hover { box-shadow: 0 6px 0 0 #a855f7; border-color: #a855f7; }
-        .hover-shadow-red:hover { box-shadow: 0 6px 0 0 #ef4444; border-color: #ef4444; }
-        .hover-shadow-yellow:hover { box-shadow: 0 6px 0 0 #facc15; border-color: #facc15; }
+        /* Grid Colors (Solid 3D + Persistent Glow) */
+        .hover-shadow-gold { border-color: rgba(234, 179, 8, 0.2); box-shadow: 0 4px 0 0 rgba(255, 255, 255, 0.1), 0 0 20px rgba(234, 179, 8, 0.15); }
+        .hover-shadow-gold:hover { border-color: #eab308; box-shadow: 0 6px 0 0 #eab308, 0 0 25px rgba(234, 179, 8, 0.3); }
+
+        .hover-shadow-cyan { border-color: rgba(34, 211, 238, 0.2); box-shadow: 0 4px 0 0 rgba(255, 255, 255, 0.1), 0 0 20px rgba(34, 211, 238, 0.15); }
+        .hover-shadow-cyan:hover { border-color: #22d3ee; box-shadow: 0 6px 0 0 #22d3ee, 0 0 25px rgba(34, 211, 238, 0.3); }
+
+        .hover-shadow-blue { border-color: rgba(59, 130, 246, 0.2); box-shadow: 0 4px 0 0 rgba(255, 255, 255, 0.1), 0 0 20px rgba(59, 130, 246, 0.15); }
+        .hover-shadow-blue:hover { border-color: #3b82f6; box-shadow: 0 6px 0 0 #3b82f6, 0 0 25px rgba(59, 130, 246, 0.3); }
+
+        .hover-shadow-purple { border-color: rgba(168, 85, 247, 0.2); box-shadow: 0 4px 0 0 rgba(255, 255, 255, 0.1), 0 0 20px rgba(168, 85, 247, 0.15); }
+        .hover-shadow-purple:hover { border-color: #a855f7; box-shadow: 0 6px 0 0 #a855f7, 0 0 25px rgba(168, 85, 247, 0.3); }
+
+        .hover-shadow-red { border-color: rgba(239, 68, 68, 0.2); box-shadow: 0 4px 0 0 rgba(255, 255, 255, 0.1), 0 0 20px rgba(239, 68, 68, 0.15); }
+        .hover-shadow-red:hover { border-color: #ef4444; box-shadow: 0 6px 0 0 #ef4444, 0 0 25px rgba(239, 68, 68, 0.3); }
+
+        .hover-shadow-yellow { border-color: rgba(250, 204, 21, 0.2); box-shadow: 0 4px 0 0 rgba(255, 255, 255, 0.1), 0 0 20px rgba(250, 204, 21, 0.15); }
+        .hover-shadow-yellow:hover { border-color: #facc15; box-shadow: 0 6px 0 0 #facc15, 0 0 25px rgba(250, 204, 21, 0.3); }
     </style>
 </head>
 
@@ -474,25 +485,36 @@
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
-        function selectCategory(uiKey) {
+        function selectCategory(uiKey, scroll = true) {
             const catData = CATEGORY_DATA[uiKey];
             if (!catData) return;
 
-            currentCategoryFilter = catData.id;
+            const newHash = '#/kategori/' + encodeURIComponent(uiKey);
+            
+            // Perbarui URL hash agar sesuai dengan kategori yang diklik
+            if (window.location.hash !== newHash) {
+                navigateTo(newHash);
+            } else {
+                // Jika sudah berada di URL kategori tersebut, langsung update UI saja
+                currentCategoryFilter = catData.id;
+                document.getElementById('header-cat-text').innerText = uiKey; 
+                document.getElementById('header-cat-icon').innerText = catData.icon;
+                document.getElementById('collection-title').innerText = catData.label;
+                document.getElementById('collection-desc').innerText = catData.desc;
+                renderHome();
+            }
 
-            document.getElementById('header-cat-text').innerText = uiKey; 
-            document.getElementById('header-cat-icon').innerText = catData.icon;
-            document.getElementById('collection-title').innerText = catData.label;
-            document.getElementById('collection-desc').innerText = catData.desc;
-
-            renderHome();
-
-            const target = document.getElementById('tier-list-container');
-            if (target) {
-                const headerOffset = 85; 
-                const elementPosition = target.getBoundingClientRect().top;
-                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+            // Scroll ke list container dengan sedikit delay agar render dari router selesai
+            if (scroll) {
+                setTimeout(() => {
+                    const target = document.getElementById('tier-list-container');
+                    if (target) {
+                        const headerOffset = 85; 
+                        const elementPosition = target.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                        window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                    }
+                }, 100);
             }
         }
 
@@ -560,9 +582,36 @@
             closeSheet('animasi-sheet');
 
             if (!hash || hash === '#/') {
+                // Jika tidak ada hash (akses halaman utama), kembalikan ke default 'Wedding'
+                if (typeof CATEGORY_DATA !== 'undefined' && CATEGORY_DATA['Wedding']) {
+                    const catData = CATEGORY_DATA['Wedding'];
+                    currentCategoryFilter = catData.id;
+                    document.getElementById('header-cat-text').innerText = 'Wedding'; 
+                    document.getElementById('header-cat-icon').innerText = catData.icon;
+                    document.getElementById('collection-title').innerText = catData.label;
+                    document.getElementById('collection-desc').innerText = catData.desc;
+                }
+                renderHome();
                 switchView('view-home');
                 return;
             }
+            
+            // Tangkap routing ke hash kategori (cth: #/kategori/Kids)
+            if (hash.startsWith('#/kategori/')) {
+                const uiKey = decodeURIComponent(hash.split('/')[2]);
+                if (typeof CATEGORY_DATA !== 'undefined' && CATEGORY_DATA[uiKey]) {
+                    const catData = CATEGORY_DATA[uiKey];
+                    currentCategoryFilter = catData.id;
+                    document.getElementById('header-cat-text').innerText = uiKey; 
+                    document.getElementById('header-cat-icon').innerText = catData.icon;
+                    document.getElementById('collection-title').innerText = catData.label;
+                    document.getElementById('collection-desc').innerText = catData.desc;
+                }
+                renderHome();
+                switchView('view-home');
+                return;
+            }
+
             if (hash.startsWith('#/category/')) {
                 const tier = decodeURIComponent(hash.split('/')[2]);
                 renderCategoryView(tier);
@@ -693,6 +742,10 @@
 
             availableTiers.forEach(tier => {
                 const products = grouped[tier];
+                
+                // Urutkan produk di dalam tier berdasarkan harga dari termurah ke termahal
+                products.sort((a, b) => a.price_real - b.price_real);
+
                 const prices = products.map(p => p.price_real);
                 const minPrice = Math.min(...prices);
                 const maxPrice = Math.max(...prices);
@@ -753,6 +806,9 @@
             const products = groupedProducts[tierName];
             if(!products) return;
             
+            // Urutkan juga produk di halaman list full tier berdasarkan harga dari termurah
+            products.sort((a, b) => a.price_real - b.price_real);
+
             const emoji = TIER_CONFIG[tierName] || "🔖";
             document.getElementById('cat-header-title').innerText = `${emoji} ${tierName}`;
             document.getElementById('cat-header-count').innerText = `${products.length} Tema Tersedia`;
