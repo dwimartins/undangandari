@@ -171,12 +171,50 @@ const CATEGORY_DATA = {
 // 6. KONFIGURASI DESKRIPSI & NOTIFIKASI TEMA
 // ============================================================================
 
-// Teks mutlak yang akan selalu muncul di bawah deskripsi unik dari CSV
-const GLOBAL_DESCRIPTION_TEMPLATE = `
-• Swipe ke kiri untuk melihat preview & fitur lengkap
+
+const DESC_FORMAL = `• Ini adalah contoh project yang sukses kami kerjakan
+• Gambar, logo, konsep, warna tema, dll, akan disesuaikan dengan acara anda
+• Pengerjaan maksimal 3 hari kerja
+• Wajib DP minimal 50% dari total harga
+• Gratis revisi hingga hari H`;
+
+const DESC_TEEN = `• Ini adalah contoh Tema Teen Birthday yang sudah kami kerjakan sebelumnya 
 • Semua fitur aktif, pengerjaan maksimal 24 jam
 • Gratis revisi sampai hari H
 • Tersedia layanan Express (2 jam selesai) – wajib DP 50% + fee express Rp20000`;
+
+const DESC_TEMPLATE = `• Swipe ke kiri untuk melihat preview & fitur lengkap
+• Semua fitur aktif, pengerjaan maksimal 24 jam
+• Gratis revisi sampai hari H
+• Tersedia layanan Express (2 jam selesai) – wajib DP 50% + fee express Rp20000`;
+
+// Teks mutlak yang akan selalu muncul di bawah deskripsi unik dari CSV
+// Kamus Template Deskripsi Tambahan berdasarkan kolom 'tier'
+const DESC_TEMPLATES = {
+    // 1. Fallback jika tier tidak ada di kamus ini (misal tier "Bronze", "Silver")
+    "default": `• Swipe ke kiri untuk melihat preview & fitur lengkap
+• Semua fitur aktif, pengerjaan maksimal 24 jam
+• Gratis revisi sampai hari H
+• Tersedia layanan Express (2 jam selesai) – wajib DP 50% + fee express Rp20000`,
+
+// Grup 1: Formal
+    "HUT & Anniversary": DESC_FORMAL,
+    "Corporate": DESC_FORMAL,
+    "Event": DESC_FORMAL,
+    "Pelantikan": DESC_FORMAL,
+    "Entertainment": DESC_FORMAL,
+    "Event Kampus": DESC_FORMAL,
+    "Graduation Party": DESC_FORMAL,
+    "Pelepasan Siswa": DESC_FORMAL,
+    "Perwira Pelayaran": DESC_FORMAL,
+    "School Event": DESC_FORMAL,
+    "Wisuda Kampus": DESC_FORMAL,
+// Grup 2: Teen Birthday
+    "Teen Birthday": DESC_TEEN,
+// Grup 3 Template
+    "Acara Islami": DESC_TEMPLATE,
+    "Acara Kristiani": DESC_TEMPLATE
+};
 
 // Kamus notifikasi UI Dinamis (Menggantikan PHOTO_NOTIFICATIONS lama)
 // Key di bawah ini disesuaikan dengan isi dari kolom "notification" di CSV Anda.
@@ -189,7 +227,7 @@ const UI_NOTIFICATIONS = {
     },
     
     "wedding_optional_image": {
-        title: "Sekilas Info",
+        title: "Animasi Digital"
         message: `Tidak punya foto prewed? Tenang, tersedia animasi karakter 3D gratis sesuai kebutuhanmu, <a href="/animasi-digital" target="_blank" class="text-blue-400 hover:text-blue-300 underline font-semibold transition">cek disini</a>`,
         theme: "blue",
         iconType: "animasi"
@@ -217,5 +255,27 @@ const UI_NOTIFICATIONS = {
         message: "Untuk tema khitan, Anda bisa menambahkan maksimal 3 orang anak dengan acara yang sama dalam satu undangan.",
         theme: "red",
         iconType: "badgeCheck"
+    },
+    
+        "formal_info": {
+        title: "Mohon Diperhatikan!",
+        message: "Mengingat ini adalah tema custom, sebaiknya konsultasikan kepada admin mengenai konsep, detail acara, serta tujuan dari undangan.",
+        theme: "yellow",
+        iconType: "warning"
+    },
+    
+    "party_info": {
+        title: "Punya Konsep Sendiri?",
+        message: "Kalau kamu punya referensi tema spesifik atau warna Dress Code khusus, jangan lupa sampaikan ke admin saat mengisi form data ya!",
+        theme: "purple",
+        iconType: "sparkles"
+    },
+    
+    "religi_info": {
+        title: "Kutipan & Susunan Acara",
+        message: "Silakan siapkan kutipan ayat suci, doa khusus, atau urutan ibadah secara spesifik jika ingin ditambahkan ke dalam halaman undangan.",
+        theme: "blue",
+        iconType: "book"
     }
+
 };
